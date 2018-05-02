@@ -4,12 +4,12 @@ TP Sistemas Operativos
 
 productos para el tp:
 
-InstalO
+InstalO       estado: ?
 
-IniciO
+IniciO        estado: 80 %
 
-DetectO
+DetectO       estado: ?
 
-InterpretO
+InterpretO    estado: ?
 
-ReportO
+ReportO       estado: ?
