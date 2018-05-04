@@ -1,0 +1,479 @@
+#!/bin/bash
+# Installation command for CONTROL system.
+
+controlName() {
+	echo "   __________  _   ____________  ____  __ "
+	echo "  / ____/ __ \/ | / /_  __/ __ \/ __ \/ / "
+	echo " / /   / / / /  |/ / / / / /_/ / / / / /  "
+	echo "/ /___/ /_/ / /|  / / / / _, _/ /_/ / /___"
+	echo "\____/\____/_/ |_/ /_/ /_/ |_|\____/_____/"
+	echo "                                          "
+	echo "Copyright 2018 © Grupo 06                      "
+}
+
+checkInstalled() {
+	if [ -f $GRUPO/.dirconf/installation.conf ]; then
+		CONTROL_INSTALLED=1
+	else
+		CONTROL_INSTALLED=0
+	fi
+}
+
+setVariables() {
+	GRUPO="$HOME/Grupo06"
+	DIRCONF="$HOME/Grupo06/.dirconf"
+	EXE_FILES_DIR="$GRUPO/bin"
+	MASTER_FILES_DIR="$GRUPO/master"
+	ARRIVAL_DIR="$GRUPO/arrival"
+	ACCEPTED_DIR="$GRUPO/accepted"
+	REJECTED_DIR="$GRUPO/rejected"
+	PROCESSED_DIR="$GRUPO/processed"
+	REPORTS_DIR="$GRUPO/reports"
+	LOGS_DIR="$GRUPO/logs"
+}
+
+currentConfiguration() {
+	echo "The current configuration is: "
+
+	while read linea; do
+
+    	if [[ -z $linea ]]; then continue; fi
+	
+	    CONTROL_FOLDER=$(echo "$linea" | cut -d- -f1)
+	    CONTROL_PATH=$(echo "$linea" | cut -d- -f2)
+	
+    	case "$CONTROL_FOLDER" in
+    		library) echo "System library: $CONTROL_PATH";;
+    	    ejecutables) echo "Executables files' directory: $CONTROL_PATH";;
+    	    maestros) echo "Master files directory: $CONTROL_PATH";;
+    	    arribos) echo "Arrival files directory: $CONTROL_PATH";;
+    	    aceptados) echo "Accepted files directory: $CONTROL_PATH";;
+    	    rechazados) echo "Rejected files directory: $CONTROL_PATH";;
+    	    procesados) echo "Processed files directoty $CONTROL_PATH";;
+    	    reportes) echo "Reports directory: $CONTROL_PATH";;
+    	    logs) echo "Logs directory: $CONTROL_PATH";;
+    	esac
+
+	done < "$DIRCONF/installation.conf"
+
+	echo -e "Installation status: \e[0;32mINSTALLED\e[0m"
+}
+
+inputExecutables() {
+	echo -n "Type the executables files directory, followed by [ENTER] ($EXE_FILES_DIR): "
+	read INPUT
+	
+	if [ "$EXE_FILES_DIR" != "" ]; then
+		EXE_FILES_DIR="$GRUPO/$INPUT"
+	fi
+}
+
+updateExecutables() {
+	echo -n "Actual executables files directory is $EXE_FILES_DIR, would you like to change it [Y/N]? "
+
+	while true; do
+		read UPDATE_OPTION
+		UPDATE_OPTION=${UPDATE_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			inputExecutables
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+inputMaster() {
+	echo -n "Type the master files and system tables directory, followed by [ENTER] ($MASTER_FILES_DIR): "
+	read INPUT
+
+	if [ "$INPUT" != "" ]; then
+		MASTER_FILES_DIR="$GRUPO/$INPUT"
+	fi
+}
+
+updateMaster() {
+	echo -n "Actual master files directory is $MASTER_FILES_DIR, would you like to change it [Y/N]? "
+
+	while true; do
+		read UPDATE_OPTION
+		UPDATE_OPTION=${UPDATE_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			inputMaster
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+inputArrival() {
+	echo -n "Type the arrival files directory, followed by [ENTER] ($ARRIVAL_DIR): "
+	read INPUT
+
+	if [ "$INPUT" != "" ]; then
+		ARRIVAL_DIR="$GRUPO/$INPUT"
+	fi
+}
+
+updateArrival() {
+	echo -n "Actual arrival files directory is $ARRIVAL_DIR, would you like to change it [Y/N]? "
+
+	while true; do
+		read UPDATE_OPTION
+		UPDATE_OPTION=${UPDATE_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			inputArrival
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+inputAccepted() {
+	echo -n "Type the accepted files directory, followed by [ENTER] ($ACCEPTED_DIR): "
+	read INPUT
+
+	if [ "$INPUT" != "" ]; then
+		ACCEPTED_DIR="$GRUPO/$INPUT"
+	fi
+}
+
+updateAccepted() {
+	echo -n "Actual accepted files directory is $ACCEPTED_DIR, would you like to change it [Y/N]? "
+
+	while true; do
+		read UPDATE_OPTION
+		UPDATE_OPTION=${UPDATE_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			inputAccepted
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+inputRejected() {
+	echo -n "Type the rejected files directory, followed by [ENTER] ($REJECTED_DIR): "
+	read INPUT
+
+	if [ "$INPUT" != "" ]; then
+		REJECTED_DIR="$GRUPO/$INPUT"
+	fi
+}
+
+updateRejected() {
+	echo -n "Actual rejected files directory is $REJECTED_DIR, would you like to change it [Y/N]? "
+
+	while true; do
+		read UPDATE_OPTION
+		UPDATE_OPTION=${UPDATE_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			inputRejected
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+inputProcessed() {
+	echo -n "Type the processed files directory, followed by [ENTER] ($PROCESSED_DIR): "
+	read INPUT
+
+	if [ "$INPUT" != "" ]; then
+		PROCESSED_DIR="$GRUPO/$INPUT"
+	fi
+}
+
+updateProcessed() {
+	echo -n "Actual processed files directory is $PROCESSED_DIR, would you like to change it [Y/N]? "
+
+	while true; do
+		read UPDATE_OPTION
+		UPDATE_OPTION=${UPDATE_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			inputProcessed
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+inputReports() {
+	echo -n "Type the reports directory, followed by [ENTER] ($REPORTS_DIR): "
+	read INPUT
+
+	if [ "$INPUT" != "" ]; then
+		REPORTS_DIR="$GRUPO/$INPUT"
+	fi
+}
+
+updateReports() {
+	echo -n "Actual report files directory is $REPORTS_DIR, would you like to change it [Y/N]? "
+
+	while true; do
+		read UPDATE_OPTION
+		UPDATE_OPTION=${UPDATE_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			inputReports
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+inputLogs() {
+	echo -n "Type the logs directory, followed by [ENTER] ($LOGS_DIR): "
+	read INPUT
+
+	if [ $"INPUT" == "" ]; then
+		LOGS_DIR=$GRUPO/"$INPUT"
+	fi
+}
+
+updateLogs() {
+	echo -n "Actual log files directory is $LOGS_DIR, would you like to change it [Y/N]? "
+
+	while true; do
+		read UPDATE_OPTION
+		UPDATE_OPTION=${UPDATE_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			inputLogs
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+loadingBar() {
+	for it in $(seq 1 40); do 
+		echo -n "-"
+		sleep 0.025
+	done
+	echo ">"
+	unset it
+}
+
+creationLoader() {
+	for it in $(seq 1 3); do 
+		echo -n "."
+		sleep 0.333
+	done
+	echo ""
+}
+
+actualConfiguration() {
+	echo "The current configuration is: "
+	echo "System library: $DIRCONF"
+	echo "Executables files' directory: $EXE_FILES_DIR"
+	echo "Master files directory: $MASTER_FILES_DIR"
+	echo "Arrival files directory: $ARRIVAL_DIR"
+	echo "Accepted files directory: $ACCEPTED_DIR"
+	echo "Rejected files directory: $REJECTED_DIR"
+	echo "Processed files directoty $PROCESSED_DIR"
+	echo "Reports directory: $REPORTS_DIR"
+	echo "Logs directory: $LOGS_DIR"
+	echo -e "Installation status: \e[0;33mWAITING FOR CONFIRMATION\e[0m"
+	echo -n "Do you want to continue [Y/N]? "
+
+	while true; do
+		read INPUT
+		INPUT=${INPUT^^}
+
+		if [[ "YES" == "$INPUT"* ]]; then
+			CONFIG_ACCEPTED=1
+			break
+		elif [[ "NO" == "$INPUT"* ]]; then
+			CONFIG_ACCEPTED=0
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+	
+}
+
+firstDataInput() {
+	PERL_VERSION=$(perl -v | grep "This is perl *"  | sed 's-\(.*\)(v\(.*\))\(.*\)-\2-g')
+	if ((${PERL_VERSION:0:1} < 5)); then
+		echo "An upgrade in PERL is required to continue with the software installation. Please, install at lease PERL 5.0.0 and try again later (maybe using sudo apt-get perl)."
+		CONTROL_INSTALLATION=1
+	fi
+
+	if [ ! -d "$HOME/Grupo06" ]; then
+  		mkdir $GRUPO
+	fi
+
+	inputExecutables
+	inputMaster
+	inputArrival
+	inputAccepted
+	inputRejected
+	inputProcessed
+	inputReports
+	inputLogs
+
+	loadingBar
+	actualConfiguration
+}
+
+updateDataInput() {
+	updateExecutables
+	updateMaster
+	updateArrival
+	updateAccepted
+	updateRejected
+	updateProcessed
+	updateReports
+	updateLogs
+
+	loadingBar
+	actualConfiguration
+}
+
+createDirectories() {
+	mkdir -p "$DIRCONF"
+	echo -n "Creating system library"
+	creationLoader
+
+	mkdir -p "$EXE_FILES_DIR"
+	echo -n "Creating executables files directory"
+	creationLoader
+
+	mkdir -p "$MASTER_FILES_DIR"
+	echo -n "Creating master files directory"
+	creationLoader
+	
+	mkdir -p "$ARRIVAL_DIR"
+	echo -n "Creating arrival files directory"
+	creationLoader
+
+	mkdir -p "$ACCEPTED_DIR"
+	echo -n "Creating accepted files directory"
+	creationLoader
+
+	mkdir -p "$REJECTED_DIR"
+	echo -n "Creating rejected files directory"
+	creationLoader
+
+	mkdir -p "$PROCESSED_DIR"
+	echo -n "Creating processed files directory"
+	creationLoader
+
+	mkdir -p "$REPORTS_DIR"
+	echo -n "Creating reports directory"
+	creationLoader
+
+	mkdir -p "$LOGS_DIR"
+	echo -n "Creating logs directory"
+	creationLoader
+}
+
+movingFiles() {
+	cp files/master $MASTER_FILES_DIR
+	cp files/tables $MASTER_FILES_DIR
+	cp files/executables $EXE_FILES_DIR
+}
+
+createConfigurationFile() {
+	touch $DIRCONF/installation.conf
+
+	echo "ejecutables-$EXE_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "maestros-$MASTER_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "arribos-$ARRIVAL_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "aceptados-$ACCEPTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "rechazados-$REJECTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "procesados-$PROCESSED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "reportes-$REPORTS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "logs-$LOGS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo -n "Creating configuration file"
+	creationLoader
+}
+
+runInstallation() {
+	echo "Your directory structure will be generated in $HOME/Grupo06."
+	setVariables
+
+	loadingBar
+	firstDataInput
+
+	while [ $CONFIG_ACCEPTED == 0 ]; do
+		loadingBar
+		updateDataInput
+	done
+
+	loadingBar
+	createDirectories
+	movingFiles
+	createConfigurationFile
+	loadingBar
+
+	echo "Installation completed!"
+}
+
+repairingMode() {
+	echo "The installation manager is running in the repairing mode."
+	echo "Every file previously used by the system (including reports) will be lost."
+	echo "If you want to keep any file, move them to their corresponding folder (master, tables or executables) in the package files folder"
+	echo -n "Do you want to continue [Y/N]? "
+
+	while true; do
+		read REPAIR_OPTION
+		REPAIR_OPTION=${REPAIR_OPTION^^}
+		
+		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+			loadingBar
+			runInstallation
+			break
+		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			break
+		else
+			echo -n "Wrong option. Retype [Y/N]: "
+		fi
+	done
+}
+
+controlName
+echo "Welcome to the CONTROL installation wizard."
+
+if [ "$1" == "-r" ]; then
+	repairingMode
+else
+	checkInstalled
+	if [ $CONTROL_INSTALLED == 1 ]; then
+		echo "The CONTROL System is already installed in this environment. If you want to repair it, please try with \"install -r\"."
+		currentConfiguration
+	else
+		runInstallation
+	fi
+fi	
