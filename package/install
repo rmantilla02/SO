@@ -20,8 +20,7 @@ checkInstalled() {
 }
 
 setVariables() {
-	GRUPO="$HOME/Grupo06"
-	DIRCONF="$HOME/Grupo06/.dirconf"
+	DIRECTORY_DUPLICATED=0
 	EXE_FILES_DIR="$GRUPO/bin"
 	MASTER_FILES_DIR="$GRUPO/master"
 	ARRIVAL_DIR="$GRUPO/arrival"
@@ -44,7 +43,7 @@ currentConfiguration() {
 	
     	case "$CONTROL_FOLDER" in
     		library) echo "System library: $CONTROL_PATH";;
-    	    ejecutables) echo "Executables files' directory: $CONTROL_PATH";;
+    	    ejecutables) echo "Executables files directory: $CONTROL_PATH";;
     	    maestros) echo "Master files directory: $CONTROL_PATH";;
     	    arribos) echo "Arrival files directory: $CONTROL_PATH";;
     	    aceptados) echo "Accepted files directory: $CONTROL_PATH";;
@@ -59,24 +58,39 @@ currentConfiguration() {
 	echo -e "Installation status: \e[0;32mINSTALLED\e[0m"
 }
 
-inputExecutables() {
-	echo -n "Type the executables files directory, followed by [ENTER] ($EXE_FILES_DIR): "
+inputDirectory() {
+	echo -n "Type the $2 directory, followed by [ENTER] (Default: ${!1}): "
 	read INPUT
+
+	TMP_DIR="${!1}"
+	if [ "$INPUT" != "" ]; then
+		TMP_DIR="$GRUPO/$INPUT"
+
+		checkDuplicated "$TMP_DIR"
+		while [ $DIRECTORY_DUPLICATED == 1 ]; do
+			echo -n "The specified directory is already used, type a different one [ENTER] (Default: ${!1}): "
+			read INPUT
+
+			TMP_DIR="${!1}"
+			if [ "$INPUT" != "" ]; then
+				TMP_DIR="$GRUPO/$INPUT"
+			fi
+			checkDuplicated "$TMP_DIR"
+		done
 	
-	if [ "$EXE_FILES_DIR" != "" ]; then
-		EXE_FILES_DIR="$GRUPO/$INPUT"
+		eval "$1=$TMP_DIR"
 	fi
 }
 
-updateExecutables() {
-	echo -n "Actual executables files directory is $EXE_FILES_DIR, would you like to change it [Y/N]? "
+updateDirectory() {
+	echo -n "Actual $2 directory is ${!1}, would you like to change it [Y/N]? "
 
 	while true; do
 		read UPDATE_OPTION
 		UPDATE_OPTION=${UPDATE_OPTION^^}
 		
 		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
-			inputExecutables
+			inputDirectory $1 $2
 			break
 		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
 			break
@@ -86,193 +100,19 @@ updateExecutables() {
 	done
 }
 
-inputMaster() {
-	echo -n "Type the master files and system tables directory, followed by [ENTER] ($MASTER_FILES_DIR): "
-	read INPUT
+checkDuplicated() {
+	DIRECTORY_DUPLICATED=0
 
-	if [ "$INPUT" != "" ]; then
-		MASTER_FILES_DIR="$GRUPO/$INPUT"
+	if [ "$1" == "$DIRCONF" ]; then DIRECTORY_DUPLICATED=1
+	elif [ "$1" == "$EXE_FILES_DIR" ]; then DIRECTORY_DUPLICATED=1
+	elif [ "$1" == "$MASTER_FILES_DIR" ]; then DIRECTORY_DUPLICATED=1
+	elif [ "$1" == "$ARRIVAL_DIR" ]; then DIRECTORY_DUPLICATED=1
+	elif [ "$1" == "$ACCEPTED_DIR" ]; then DIRECTORY_DUPLICATED=1
+	elif [ "$1" == "$REJECTED_DIR" ]; then DIRECTORY_DUPLICATED=1
+	elif [ "$1" == "$PROCESSED_DIR" ]; then DIRECTORY_DUPLICATED=1
+	elif [ "$1" == "$REPORTS_DIR" ]; then DIRECTORY_DUPLICATED=1
+	elif [ "$1" == "$LOGS_DIR" ]; then DIRECTORY_DUPLICATED=1
 	fi
-}
-
-updateMaster() {
-	echo -n "Actual master files directory is $MASTER_FILES_DIR, would you like to change it [Y/N]? "
-
-	while true; do
-		read UPDATE_OPTION
-		UPDATE_OPTION=${UPDATE_OPTION^^}
-		
-		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
-			inputMaster
-			break
-		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
-			break
-		else
-			echo -n "Wrong option. Retype [Y/N]: "
-		fi
-	done
-}
-
-inputArrival() {
-	echo -n "Type the arrival files directory, followed by [ENTER] ($ARRIVAL_DIR): "
-	read INPUT
-
-	if [ "$INPUT" != "" ]; then
-		ARRIVAL_DIR="$GRUPO/$INPUT"
-	fi
-}
-
-updateArrival() {
-	echo -n "Actual arrival files directory is $ARRIVAL_DIR, would you like to change it [Y/N]? "
-
-	while true; do
-		read UPDATE_OPTION
-		UPDATE_OPTION=${UPDATE_OPTION^^}
-		
-		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
-			inputArrival
-			break
-		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
-			break
-		else
-			echo -n "Wrong option. Retype [Y/N]: "
-		fi
-	done
-}
-
-inputAccepted() {
-	echo -n "Type the accepted files directory, followed by [ENTER] ($ACCEPTED_DIR): "
-	read INPUT
-
-	if [ "$INPUT" != "" ]; then
-		ACCEPTED_DIR="$GRUPO/$INPUT"
-	fi
-}
-
-updateAccepted() {
-	echo -n "Actual accepted files directory is $ACCEPTED_DIR, would you like to change it [Y/N]? "
-
-	while true; do
-		read UPDATE_OPTION
-		UPDATE_OPTION=${UPDATE_OPTION^^}
-		
-		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
-			inputAccepted
-			break
-		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
-			break
-		else
-			echo -n "Wrong option. Retype [Y/N]: "
-		fi
-	done
-}
-
-inputRejected() {
-	echo -n "Type the rejected files directory, followed by [ENTER] ($REJECTED_DIR): "
-	read INPUT
-
-	if [ "$INPUT" != "" ]; then
-		REJECTED_DIR="$GRUPO/$INPUT"
-	fi
-}
-
-updateRejected() {
-	echo -n "Actual rejected files directory is $REJECTED_DIR, would you like to change it [Y/N]? "
-
-	while true; do
-		read UPDATE_OPTION
-		UPDATE_OPTION=${UPDATE_OPTION^^}
-		
-		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
-			inputRejected
-			break
-		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
-			break
-		else
-			echo -n "Wrong option. Retype [Y/N]: "
-		fi
-	done
-}
-
-inputProcessed() {
-	echo -n "Type the processed files directory, followed by [ENTER] ($PROCESSED_DIR): "
-	read INPUT
-
-	if [ "$INPUT" != "" ]; then
-		PROCESSED_DIR="$GRUPO/$INPUT"
-	fi
-}
-
-updateProcessed() {
-	echo -n "Actual processed files directory is $PROCESSED_DIR, would you like to change it [Y/N]? "
-
-	while true; do
-		read UPDATE_OPTION
-		UPDATE_OPTION=${UPDATE_OPTION^^}
-		
-		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
-			inputProcessed
-			break
-		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
-			break
-		else
-			echo -n "Wrong option. Retype [Y/N]: "
-		fi
-	done
-}
-
-inputReports() {
-	echo -n "Type the reports directory, followed by [ENTER] ($REPORTS_DIR): "
-	read INPUT
-
-	if [ "$INPUT" != "" ]; then
-		REPORTS_DIR="$GRUPO/$INPUT"
-	fi
-}
-
-updateReports() {
-	echo -n "Actual report files directory is $REPORTS_DIR, would you like to change it [Y/N]? "
-
-	while true; do
-		read UPDATE_OPTION
-		UPDATE_OPTION=${UPDATE_OPTION^^}
-		
-		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
-			inputReports
-			break
-		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
-			break
-		else
-			echo -n "Wrong option. Retype [Y/N]: "
-		fi
-	done
-}
-
-inputLogs() {
-	echo -n "Type the logs directory, followed by [ENTER] ($LOGS_DIR): "
-	read INPUT
-
-	if [ $"INPUT" == "" ]; then
-		LOGS_DIR=$GRUPO/"$INPUT"
-	fi
-}
-
-updateLogs() {
-	echo -n "Actual log files directory is $LOGS_DIR, would you like to change it [Y/N]? "
-
-	while true; do
-		read UPDATE_OPTION
-		UPDATE_OPTION=${UPDATE_OPTION^^}
-		
-		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
-			inputLogs
-			break
-		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
-			break
-		else
-			echo -n "Wrong option. Retype [Y/N]: "
-		fi
-	done
 }
 
 loadingBar() {
@@ -295,7 +135,7 @@ creationLoader() {
 actualConfiguration() {
 	echo "The current configuration is: "
 	echo "System library: $DIRCONF"
-	echo "Executables files' directory: $EXE_FILES_DIR"
+	echo "Executables files directory: $EXE_FILES_DIR"
 	echo "Master files directory: $MASTER_FILES_DIR"
 	echo "Arrival files directory: $ARRIVAL_DIR"
 	echo "Accepted files directory: $ACCEPTED_DIR"
@@ -334,75 +174,89 @@ firstDataInput() {
   		mkdir $GRUPO
 	fi
 
-	inputExecutables
-	inputMaster
-	inputArrival
-	inputAccepted
-	inputRejected
-	inputProcessed
-	inputReports
-	inputLogs
+	inputDirectory EXE_FILES_DIR "executables files"
+	inputDirectory MASTER_FILES_DIR "master files"
+	inputDirectory ARRIVAL_DIR "arrival files"
+	inputDirectory ACCEPTED_DIR "accepted files"
+	inputDirectory REJECTED_DIR "rejected files"
+	inputDirectory PROCESSED_DIR "processed files"
+	inputDirectory REPORTS_DIR "reports"
+	inputDirectory LOGS_DIR "logs"
 
 	loadingBar
 	actualConfiguration
 }
 
 updateDataInput() {
-	updateExecutables
-	updateMaster
-	updateArrival
-	updateAccepted
-	updateRejected
-	updateProcessed
-	updateReports
-	updateLogs
+	updateDirectory EXE_FILES_DIR "executables files"
+	updateDirectory MASTER_FILES_DIR "master files"
+	updateDirectory ARRIVAL_DIR "arrival files"
+	updateDirectory ACCEPTED_DIR "accepted files"
+	updateDirectory REJECTED_DIR "rejected files"
+	updateDirectory PROCESSED_DIR "processed files"
+	updateDirectory REPORTS_DIR "reports"
+	updateDirectory LOGS_DIR "logs"
 
 	loadingBar
 	actualConfiguration
 }
 
 createDirectories() {
-	mkdir -p "$DIRCONF"
+	mkdir -p $DIRCONF
 	echo -n "Creating system library"
 	creationLoader
 
-	mkdir -p "$EXE_FILES_DIR"
+	mkdir -p $EXE_FILES_DIR
 	echo -n "Creating executables files directory"
 	creationLoader
 
-	mkdir -p "$MASTER_FILES_DIR"
+	mkdir -p $MASTER_FILES_DIR
 	echo -n "Creating master files directory"
 	creationLoader
 	
-	mkdir -p "$ARRIVAL_DIR"
+	mkdir -p $ARRIVAL_DIR
 	echo -n "Creating arrival files directory"
 	creationLoader
 
-	mkdir -p "$ACCEPTED_DIR"
+	mkdir -p $ACCEPTED_DIR
 	echo -n "Creating accepted files directory"
 	creationLoader
 
-	mkdir -p "$REJECTED_DIR"
+	mkdir -p $REJECTED_DIR
 	echo -n "Creating rejected files directory"
 	creationLoader
 
-	mkdir -p "$PROCESSED_DIR"
+	mkdir -p $PROCESSED_DIR
 	echo -n "Creating processed files directory"
 	creationLoader
 
-	mkdir -p "$REPORTS_DIR"
+	mkdir -p $REPORTS_DIR
 	echo -n "Creating reports directory"
 	creationLoader
 
-	mkdir -p "$LOGS_DIR"
+	mkdir -p $LOGS_DIR
 	echo -n "Creating logs directory"
 	creationLoader
 }
 
 movingFiles() {
-	cp files/master $MASTER_FILES_DIR
-	cp files/tables $MASTER_FILES_DIR
-	cp files/executables $EXE_FILES_DIR
+	if [ "$(ls -A files/master)" ]; then
+		cp files/master/* $MASTER_FILES_DIR/
+		echo -n "Copying master files"
+		creationLoader
+	fi
+
+	if [ "$(ls -A files/tables)" ]; then
+		cp files/tables/* $MASTER_FILES_DIR/
+		echo -n "Copying tables"
+		creationLoader
+	fi
+
+	if [ "$(ls -A files/executables)" ]; then
+		cp files/executables/* $EXE_FILES_DIR/
+		echo -n "Copying executables files"
+		creationLoader
+	fi
 }
 
 createConfigurationFile() {
@@ -441,21 +295,28 @@ runInstallation() {
 	echo "Installation completed!"
 }
 
+cleanDirectory() {
+	rm -rf $GRUPO
+	echo "The destination directory was succesfully cleaned."
+}
+
 repairingMode() {
 	echo "The installation manager is running in the repairing mode."
 	echo "Every file previously used by the system (including reports) will be lost."
-	echo "If you want to keep any file, move them to their corresponding folder (master, tables or executables) in the package files folder"
+	echo "If you want to keep any source file, move them to their corresponding folder (master, tables or executables) in the package files folder."
+	echo "In case you want to keep any output file (like reports), procceed with their respective backup."
 	echo -n "Do you want to continue [Y/N]? "
 
 	while true; do
 		read REPAIR_OPTION
 		REPAIR_OPTION=${REPAIR_OPTION^^}
 		
-		if [[ "YES" == "$UPDATE_OPTION"* ]]; then
+		if [[ "YES" == "$REPAIR_OPTION"* ]]; then
 			loadingBar
+			cleanDirectory
 			runInstallation
 			break
-		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+		elif [[ "NO" == "$REPAIR_OPTION"* ]]; then
 			break
 		else
 			echo -n "Wrong option. Retype [Y/N]: "
@@ -465,6 +326,8 @@ repairingMode() {
 
 controlName
 echo "Welcome to the CONTROL installation wizard."
+GRUPO="$HOME/Grupo06"
+DIRCONF="$HOME/Grupo06/.dirconf"
 
 if [ "$1" == "-r" ]; then
 	repairingMode
@@ -472,6 +335,7 @@ else
 	checkInstalled
 	if [ $CONTROL_INSTALLED == 1 ]; then
 		echo "The CONTROL System is already installed in this environment. If you want to repair it, please try with \"install -r\"."
+		loadingBar
 		currentConfiguration
 	else
 		runInstallation
