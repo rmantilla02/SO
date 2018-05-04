@@ -4,7 +4,7 @@ TP Sistemas Operativos
 
 productos para el tp:
 
-InstalO       estado: ?
+InstalO       estado: 95%
 
 IniciO        estado: 80 %
 
