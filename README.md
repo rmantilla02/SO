@@ -12,4 +12,4 @@ DetectO       estado: ?
 
 InterpretO    estado: ?
 
-ReportO       estado: ?
+ReportO       estado: 30%
