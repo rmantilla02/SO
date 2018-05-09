@@ -34,7 +34,10 @@ my @MT_DEB = ();
 
 while ($linea = <ENTRADA>)
 {
-	$uno = index($linea,";"); 
+	$PAIS_ID = $linea;
+	$PAIS_ID =~ sed 's/\(.*;\)-\(.*\)/\1/g' || die "Muérase";
+	#$PAIS_ID =~ s/A/B/ || die "Muérase";
+	print($PAIS_ID); 
 }
 
 
