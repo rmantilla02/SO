@@ -1,5 +1,9 @@
 #!/bin/bash
 # Installation command for CONTROL system.
+GRUPO="$HOME/Grupo06"
+DIRCONF="$HOME/Grupo06/.dirconf"
+LOGFILE="install"
+source ./log
 
 controlName() {
 	echo "   __________  _   ____________  ____  __ "
@@ -8,13 +12,15 @@ controlName() {
 	echo "/ /___/ /_/ / /|  / / / / _, _/ /_/ / /___"
 	echo "\____/\____/_/ |_/ /_/ /_/ |_|\____/_____/"
 	echo "                                          "
-	echo "Copyright 2018 © Grupo 06                      "
+	echo "Copyright 2018 © Grupo 06                 "
 }
 
 checkInstalled() {
 	if [ -f $GRUPO/.dirconf/installation.conf ]; then
+		log "There was found a previos installation of the Control System."
 		CONTROL_INSTALLED=1
 	else
+		log "There was not found a previos installation of the Control System."
 		CONTROL_INSTALLED=0
 	fi
 }
@@ -33,6 +39,7 @@ setVariables() {
 
 currentConfiguration() {
 	echo "The current configuration is: "
+	log "Printing the current configuration."
 
 	while read linea; do
 
@@ -61,13 +68,15 @@ currentConfiguration() {
 inputDirectory() {
 	echo -n "Type the $2 directory, followed by [ENTER] (Default: ${!1}): "
 	read INPUT
-
+	
 	TMP_DIR="${!1}"
 	if [ "$INPUT" != "" ]; then
+		log "User inserted the path $INPUT."
 		TMP_DIR="$GRUPO/$INPUT"
 
 		checkDuplicated "$TMP_DIR"
 		while [ $DIRECTORY_DUPLICATED == 1 ]; do
+			log "User must retype the path because it was duplicated."
 			echo -n "The specified directory is already used, type a different one [ENTER] (Default: ${!1}): "
 			read INPUT
 
@@ -79,6 +88,8 @@ inputDirectory() {
 		done
 	
 		eval "$1=$TMP_DIR"
+	else
+		log "User skipped the path."
 	fi
 }
 
@@ -93,6 +104,7 @@ updateDirectory() {
 			inputDirectory $1 $2
 			break
 		elif [[ "NO" == "$UPDATE_OPTION"* ]]; then
+			log "User skipped the update."
 			break
 		else
 			echo -n "Wrong option. Retype [Y/N]: "
@@ -103,15 +115,15 @@ updateDirectory() {
 checkDuplicated() {
 	DIRECTORY_DUPLICATED=0
 
-	if [ "$1" == "$DIRCONF" ]; then DIRECTORY_DUPLICATED=1
-	elif [ "$1" == "$EXE_FILES_DIR" ]; then DIRECTORY_DUPLICATED=1
-	elif [ "$1" == "$MASTER_FILES_DIR" ]; then DIRECTORY_DUPLICATED=1
-	elif [ "$1" == "$ARRIVAL_DIR" ]; then DIRECTORY_DUPLICATED=1
-	elif [ "$1" == "$ACCEPTED_DIR" ]; then DIRECTORY_DUPLICATED=1
-	elif [ "$1" == "$REJECTED_DIR" ]; then DIRECTORY_DUPLICATED=1
-	elif [ "$1" == "$PROCESSED_DIR" ]; then DIRECTORY_DUPLICATED=1
-	elif [ "$1" == "$REPORTS_DIR" ]; then DIRECTORY_DUPLICATED=1
-	elif [ "$1" == "$LOGS_DIR" ]; then DIRECTORY_DUPLICATED=1
+	if [ "$1" == "$DIRCONF" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with System directory)."
+	elif [ "$1" == "$EXE_FILES_DIR" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with Executables directory)."
+	elif [ "$1" == "$MASTER_FILES_DIR" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with Master directory)."
+	elif [ "$1" == "$ARRIVAL_DIR" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with Arrival directory)."
+	elif [ "$1" == "$ACCEPTED_DIR" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with Accepted directory)."
+	elif [ "$1" == "$REJECTED_DIR" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with Rejected directory)."
+	elif [ "$1" == "$PROCESSED_DIR" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with Processed directory)."
+	elif [ "$1" == "$REPORTS_DIR" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with Reports directory)."
+	elif [ "$1" == "$LOGS_DIR" ]; then DIRECTORY_DUPLICATED=1; log "Input directory duplicated (with Logs directory)."
 	fi
 }
 
@@ -145,6 +157,7 @@ actualConfiguration() {
 	echo "Logs directory: $LOGS_DIR"
 	echo -e "Installation status: \e[0;33mWAITING FOR CONFIRMATION\e[0m"
 	echo -n "Do you want to continue [Y/N]? "
+	log "Actual configuration showed."
 
 	while true; do
 		read INPUT
@@ -166,21 +179,31 @@ actualConfiguration() {
 firstDataInput() {
 	PERL_VERSION=$(perl -v | grep "This is perl *"  | sed 's-\(.*\)(v\(.*\))\(.*\)-\2-g')
 	if ((${PERL_VERSION:0:1} < 5)); then
+		log "The Perl version installed is v$PERL_VERSION, and this program requires at least the version 5.0.0"
 		echo "An upgrade in PERL is required to continue with the software installation. Please, install at lease PERL 5.0.0 and try again later (maybe using sudo apt-get perl)."
 		CONTROL_INSTALLATION=1
 	fi
 
 	if [ ! -d "$HOME/Grupo06" ]; then
   		mkdir $GRUPO
+  		log "Program home directory created at $GRUPO."
 	fi
 
+	log "User will insert the executables files path."
 	inputDirectory EXE_FILES_DIR "executables files"
+	log "User will insert the master files path."
 	inputDirectory MASTER_FILES_DIR "master files"
+	log "User will insert the arrival files path."
 	inputDirectory ARRIVAL_DIR "arrival files"
+	log "User will insert the accepted files path."
 	inputDirectory ACCEPTED_DIR "accepted files"
+	log "User will insert the rejected files path."
 	inputDirectory REJECTED_DIR "rejected files"
+	log "User will insert the processed files path."
 	inputDirectory PROCESSED_DIR "processed files"
+	log "User will insert the reports path."
 	inputDirectory REPORTS_DIR "reports"
+	log "User will insert the logs path."
 	inputDirectory LOGS_DIR "logs"
 
 	loadingBar
@@ -188,13 +211,21 @@ firstDataInput() {
 }
 
 updateDataInput() {
+	log "User will update the executables files path."
 	updateDirectory EXE_FILES_DIR "executables files"
+	log "User will update the master files path."
 	updateDirectory MASTER_FILES_DIR "master files"
+	log "User will update the arrival files path."
 	updateDirectory ARRIVAL_DIR "arrival files"
+	log "User will update the accepted files path."
 	updateDirectory ACCEPTED_DIR "accepted files"
+	log "User will update the rejected files path."
 	updateDirectory REJECTED_DIR "rejected files"
+	log "User will update the processed files path."
 	updateDirectory PROCESSED_DIR "processed files"
+	log "User will update the reports path."
 	updateDirectory REPORTS_DIR "reports"
+	log "User will update the logs path."
 	updateDirectory LOGS_DIR "logs"
 
 	loadingBar
@@ -203,38 +234,47 @@ updateDataInput() {
 
 createDirectories() {
 	mkdir -p $DIRCONF
+	log "System directory created at $DIRCONF."
 	echo -n "Creating system library"
 	creationLoader
 
 	mkdir -p $EXE_FILES_DIR
+	log "Executables files directory created at $EXE_FILES_DIR."
 	echo -n "Creating executables files directory"
 	creationLoader
 
 	mkdir -p $MASTER_FILES_DIR
+	log "Master files directory created at $MASTER_FILES_DIR."
 	echo -n "Creating master files directory"
 	creationLoader
 	
 	mkdir -p $ARRIVAL_DIR
+	log "Arrival files directory created at $ARRIVAL_DIR."
 	echo -n "Creating arrival files directory"
 	creationLoader
 
 	mkdir -p $ACCEPTED_DIR
+	log "Accepted files directory created at $ACCEPTED_DIR."
 	echo -n "Creating accepted files directory"
 	creationLoader
 
 	mkdir -p $REJECTED_DIR
+	log "Rejected files directory created at $REJECTED_DIR."
 	echo -n "Creating rejected files directory"
 	creationLoader
 
 	mkdir -p $PROCESSED_DIR
+	log "Processed files directory created at $PROCESSED_DIR."
 	echo -n "Creating processed files directory"
 	creationLoader
 
 	mkdir -p $REPORTS_DIR
+	log "Reports directory created at $REPORTS_DIR."
 	echo -n "Creating reports directory"
 	creationLoader
 
 	mkdir -p $LOGS_DIR
+	log "Logs directory created at $LOGS_DIR."
 	echo -n "Creating logs directory"
 	creationLoader
 }
@@ -242,35 +282,54 @@ createDirectories() {
 movingFiles() {
 	if [ "$(ls -A files/master)" ]; then
 		cp files/master/* $MASTER_FILES_DIR/
+		log "Existing master files moved to $MASTER_FILES_DIR."
 		echo -n "Copying master files"
 		creationLoader
+	else
+		log "There was not any master files to move to $MASTER_FILES_DIR."
 	fi
 
 	if [ "$(ls -A files/tables)" ]; then
 		cp files/tables/* $MASTER_FILES_DIR/
+		log "Existing tables files moved to $MASTER_FILES_DIR."
 		echo -n "Copying tables"
 		creationLoader
+	else
+		log "There was not any tables files to move to $MASTER_FILES_DIR."
 	fi
 
 	if [ "$(ls -A files/executables)" ]; then
 		cp files/executables/* $EXE_FILES_DIR/
+		log "Existing executables files moved to $EXE_FILES_DIR."
 		echo -n "Copying executables files"
 		creationLoader
+	else
+		log "There was not any executables files to move to $EXE_FILES_DIR."
 	fi
 }
 
 createConfigurationFile() {
 	touch $DIRCONF/installation.conf
+	log "Installation configuration file created."
 
 	echo "ejecutables-$EXE_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	log "Executables files directory wrote to installation configuration file."
 	echo "maestros-$MASTER_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	log "Master files directory wrote to installation configuration file."
 	echo "arribos-$ARRIVAL_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	log "Arrival files directory wrote to installation configuration file."
 	echo "aceptados-$ACCEPTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	log "Accepted files directory wrote to installation configuration file."
 	echo "rechazados-$REJECTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	log "Rejected files directory wrote to installation configuration file."
 	echo "procesados-$PROCESSED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	log "Processed files directory wrote to installation configuration file."
 	echo "reportes-$REPORTS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	log "Reports directory wrote to installation configuration file."
 	echo "logs-$LOGS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	log "Logs directory wrote to installation configuration file."
 	echo -n "Creating configuration file"
+	log "Installation configuration file succesfully wrote."
 	creationLoader
 }
 
@@ -280,10 +339,12 @@ runInstallation() {
 
 	loadingBar
 	firstDataInput
+	log "Input directories were defined."
 
 	while [ $CONFIG_ACCEPTED == 0 ]; do
 		loadingBar
 		updateDataInput
+		log "Input directories were updated."
 	done
 
 	loadingBar
@@ -297,6 +358,7 @@ runInstallation() {
 
 cleanDirectory() {
 	rm -rf $GRUPO
+	log "The current installation environment was cleaned."
 	echo "The destination directory was succesfully cleaned."
 }
 
@@ -312,11 +374,13 @@ repairingMode() {
 		REPAIR_OPTION=${REPAIR_OPTION^^}
 		
 		if [[ "YES" == "$REPAIR_OPTION"* ]]; then
+			log "User selected to repair current installation."
 			loadingBar
 			cleanDirectory
 			runInstallation
 			break
 		elif [[ "NO" == "$REPAIR_OPTION"* ]]; then
+			log "User selected not to repair current installation."
 			break
 		else
 			echo -n "Wrong option. Retype [Y/N]: "
@@ -324,12 +388,14 @@ repairingMode() {
 	done
 }
 
+log "Installation wizard started."
 controlName
 echo "Welcome to the CONTROL installation wizard."
-GRUPO="$HOME/Grupo06"
-DIRCONF="$HOME/Grupo06/.dirconf"
+log "Local variable GRUPO seted at $HOME/Grupo06"
+log "Local variable DIRCONF seted at $HOME/Grupo06/.dirconf"
 
 if [ "$1" == "-r" ]; then
+	log "The program will run in repair mode."
 	repairingMode
 else
 	checkInstalled
