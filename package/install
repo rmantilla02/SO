@@ -1,7 +1,7 @@
 #!/bin/bash
 # Installation command for CONTROL system.
-GRUPO="$HOME/Grupo06"
-DIRCONF="$HOME/Grupo06/.dirconf"
+export GRUPO="$HOME/Grupo06"
+export DIRCONF="$HOME/Grupo06/.dirconf"
 LOGFILE="install"
 source ./log
 
@@ -49,15 +49,15 @@ currentConfiguration() {
 	    CONTROL_PATH=$(echo "$linea" | cut -d- -f2)
 	
     	case "$CONTROL_FOLDER" in
-    		library) echo "System library: $CONTROL_PATH";;
-    	    ejecutables) echo "Executables files directory: $CONTROL_PATH";;
-    	    maestros) echo "Master files directory: $CONTROL_PATH";;
-    	    arribos) echo "Arrival files directory: $CONTROL_PATH";;
-    	    aceptados) echo "Accepted files directory: $CONTROL_PATH";;
-    	    rechazados) echo "Rejected files directory: $CONTROL_PATH";;
-    	    procesados) echo "Processed files directoty $CONTROL_PATH";;
-    	    reportes) echo "Reports directory: $CONTROL_PATH";;
-    	    logs) echo "Logs directory: $CONTROL_PATH";;
+    		System) echo "System library: $CONTROL_PATH";;
+    	    Executables) echo "Executables files directory: $CONTROL_PATH";;
+    	    Master) echo "Master files directory: $CONTROL_PATH";;
+    	    Arrival) echo "Arrival files directory: $CONTROL_PATH";;
+    	    Accepted) echo "Accepted files directory: $CONTROL_PATH";;
+    	    Rejected) echo "Rejected files directory: $CONTROL_PATH";;
+    	    Processed) echo "Processed files directoty $CONTROL_PATH";;
+    	    Reports) echo "Reports directory: $CONTROL_PATH";;
+    	    Logs) echo "Logs directory: $CONTROL_PATH";;
     	esac
 
 	done < "$DIRCONF/installation.conf"
@@ -306,21 +306,21 @@ createConfigurationFile() {
 	touch $DIRCONF/installation.conf
 	log "Installation configuration file created."
 
-	echo "ejecutables-$EXE_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Executables-$EXE_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
 	log "Executables files directory wrote to installation configuration file."
-	echo "maestros-$MASTER_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Master-$MASTER_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
 	log "Master files directory wrote to installation configuration file."
-	echo "arribos-$ARRIVAL_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Arrival-$ARRIVAL_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
 	log "Arrival files directory wrote to installation configuration file."
-	echo "aceptados-$ACCEPTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Accepted-$ACCEPTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
 	log "Accepted files directory wrote to installation configuration file."
-	echo "rechazados-$REJECTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Rejected-$REJECTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
 	log "Rejected files directory wrote to installation configuration file."
-	echo "procesados-$PROCESSED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Processed-$PROCESSED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
 	log "Processed files directory wrote to installation configuration file."
-	echo "reportes-$REPORTS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Reports-$REPORTS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
 	log "Reports directory wrote to installation configuration file."
-	echo "logs-$LOGS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Logs-$LOGS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
 	log "Logs directory wrote to installation configuration file."
 	echo -n "Creating configuration file"
 	log "Installation configuration file succesfully wrote."
@@ -386,11 +386,15 @@ repairingMode() {
 }
 
 function init() {
-	if [ ! -d "$HOME/Grupo06" ]; then mkdir $GRUPO; fi
+	if [ ! -d "$GRUPO" ]; then mkdir $GRUPO; fi
+	echo "LS del Grupo:"
+	ls $GRUPO
 	if [ ! -d "$DIRCONF" ]; then mkdir $DIRCONF; fi
+	echo "LS del DIRCONF:"
+	ls $DIRCONF
 }
 
-installation
+init
 log "Installation wizard started."
 controlName
 echo "Welcome to the CONTROL installation wizard."
