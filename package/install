@@ -184,11 +184,6 @@ firstDataInput() {
 		CONTROL_INSTALLATION=1
 	fi
 
-	if [ ! -d "$HOME/Grupo06" ]; then
-  		mkdir $GRUPO
-  		log "Program home directory created at $GRUPO."
-	fi
-
 	log "User will insert the executables files path."
 	inputDirectory EXE_FILES_DIR "executables files"
 	log "User will insert the master files path."
@@ -233,7 +228,6 @@ updateDataInput() {
 }
 
 createDirectories() {
-	mkdir -p $DIRCONF
 	log "System directory created at $DIRCONF."
 	echo -n "Creating system library"
 	creationLoader
@@ -354,6 +348,7 @@ runInstallation() {
 	loadingBar
 
 	echo "Installation completed!"
+	log "Installation finished."
 }
 
 cleanDirectory() {
@@ -386,8 +381,16 @@ repairingMode() {
 			echo -n "Wrong option. Retype [Y/N]: "
 		fi
 	done
+
+	log "Repair finished."
 }
 
+function init() {
+	if [ ! -d "$HOME/Grupo06" ]; then mkdir $GRUPO; fi
+	if [ ! -d "$DIRCONF" ]; then mkdir $DIRCONF; fi
+}
+
+installation
 log "Installation wizard started."
 controlName
 echo "Welcome to the CONTROL installation wizard."
@@ -406,4 +409,4 @@ else
 	else
 		runInstallation
 	fi
-fi	
+fi
