@@ -1,15 +1,10 @@
 # SO
 
 TP Sistemas Operativos
+Estado de desarrollo de los distintos productos:
 
-productos para el tp:
-
-InstalO       estado: 95%
-
-IniciO        estado: 80 %
-
-DetectO       estado: ?
-
-InterpretO    estado: ?
-
-ReportO       estado: 30%
+Installation       	Estado: 100%
+Start		       	Estado: 80%
+Detect		       	Estado: ?
+Translate		   	Estado: ?
+Report       		Estado: 30%
