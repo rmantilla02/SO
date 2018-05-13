@@ -32,12 +32,32 @@ my @MT_INDE = ();
 my @MT_INNODE = ();
 my @MT_DEB = ();
 
+my @variables = (); #este array almacenará los valores de cada línea separados
+
 while ($linea = <ENTRADA>)
 {
-	$PAIS_ID = $linea;
-	$PAIS_ID =~ sed 's/\(.*;\)-\(.*\)/\1/g' || die "Muérase";
-	#$PAIS_ID =~ s/A/B/ || die "Muérase";
-	print($PAIS_ID); 
+	$i = 0;
+	$ant = -1;
+	$sub = $linea;
+	while ($i < 13)
+	{
+		$ocurrencia = index($sub, ';');
+		$sig = ocurrencia;
+		if($i == 0)
+		{
+			$size = 1;
+		}
+		else
+		{
+			$size = $sig - $ant - 1;
+		}
+		$sub = substr($sub, $sig + 1);
+		$valor = substr($linea, $ant + 1, $size);
+		$ant = $siguiente;
+		push @variables, $valor;
+		$i = $i + 1;
+	}
+	print "@variables\n";
 }
 
 
