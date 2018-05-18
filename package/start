@@ -39,7 +39,7 @@ done
 # VERIFYING / UPDATEING PERMISSIONS.
 find "$MASTER" -type f -exec chmod u+r {} +
 find "$EXECUTABLES" -type f -exec chmod u+x {} +
-log "Permissions changed in Master and Executables files."
+infoLog "main" "Permissions changed in Master and Executables files."
 echo "Permissions changed in Master and Executables files."
 
 # EXPORTING VARIABLES

@@ -6,7 +6,19 @@ if [ ! -v LOGFILE ]; then LOGFILE=log; else LOGFILE+=".log"; fi
 # Añade un registro al log de la forma "[yyyy-mm-dd hh:mm:ss] <args>" donde args son los argumentos de la funcion.
 function log() {
     if [ ! -v DIRCONF ] || [ ! -d $DIRCONF ]; then return; fi
-    echo [$(date "+%F %T")] "$@" >> $DIRCONF/$LOGFILE
+    echo [$(date "+%F %T")-$(whoami)-"$1"-"$2"] "$3" >> $DIRCONF/$LOGFILE
+}
+
+infoLog() {
+	log $1 "INFO" $2
+}
+
+warnLog() {
+	log $1 "WARN" $2
+}
+
+errorLog() {
+	log $1 "ERROR" $2
 }
 
 function truncate() {
