@@ -1,0 +1,151 @@
+ACCEPTED="$HOME/Grupo06/files/accepted"
+MASTER="$HOME/Grupo06/master"
+
+initFormatVariables() {
+	POS_MT_DEB=0
+	POS_MT_INDE=0
+	POS_MT_PRES=0
+	POS_MT_IMPAGO=0
+	POS_MT_INNODE=0
+	POS_CTB_FE=0
+	POS_CTB_ESTADO=0
+	POS_PRES_ID=0
+	POS_PRES_TI=0
+	POS_PRES_CLI=0
+	POS_PRES_CLI_ID=0
+	FORMAT_MT_DEB=""
+	FORMAT_MT_INDE=""
+	FORMAT_MT_PRES=""
+	FORMAT_MT_IMPAGO=""
+	FORMAT_MT_INNODE=""
+	FORMAT_CTB_FE=""
+	FORMAT_CTB_ESTADO=""
+	FORMAT_PRES_ID=""
+	FORMAT_PRES_TI=""
+	FORMAT_PRES_CLI=""
+	FORMAT_PRES_CLI_ID=""
+}
+
+initOutputVariables() {
+	MT_REST=0
+}
+
+processReportVariable() {
+	if [ $2 != 0 ]; then
+		eval "$1='$(echo "$LINE" | cut -d"$SEPARATOR" -f"$2")'"
+		if [ "${!1}" = "" ]; then eval "$1=0"; fi
+	else
+		eval "$1=0"
+	fi
+}
+
+replaceDecimalPoint() {
+	if [ ${!1} != 0 ]; then
+		eval "$1=$(tr "$DECIMAL" "." <<< "${!1}")"
+	fi
+}
+
+reformatDate() {
+	if [[ "$5" == *"yymmdd10"* ]]; then 
+		eval "$1=${4:0:4}"
+		eval "$2=${4:5:2}"
+		eval "$3=${4:8:2}"
+	elif [[ "$5" == *"ddmmyy10"* ]]; then 
+		eval "$1=${4:6:4}"
+		eval "$2=${4:3:2}"
+		eval "$3=${4:0:2}"
+	elif [[ "$5" == *"yymmdd8"* ]]; then 
+		eval "$1=${4:0:4}"
+		eval "$2=${4:4:2}"
+		eval "$3=${4:6:2}"
+	elif [[ "$5" == *"ddmmyy8"* ]]; then 
+		eval "$1=${4:4:4}"
+		eval "$2=${4:2:2}"
+		eval "$3=${4:0:2}"
+	fi
+}
+
+for FILE in $(ls $ACCEPTED); do
+	CONTROL_SYSTEM=${FILE:0:3}
+
+	while read -r LINE; do
+	    if [[ -z $LINE ]]; then continue; fi
+	
+		if [[ "$CONTROL_SYSTEM" == "${LINE:0:3}" ]]; then 
+			SEPARATOR=$(echo $LINE | cut -d- -f3)
+			DECIMAL=$(echo $LINE | cut -d- -f4)
+			break
+		fi
+	done < "$MASTER/T1.tab"
+
+	initFormatVariables
+
+	while read -r LINE; do
+	    if [[ -z $LINE ]]; then continue; fi
+	
+		if [[ "$CONTROL_SYSTEM" == "${LINE:0:3}" ]]; then 
+			FIELD=$(echo $LINE | cut -d- -f3)
+			LENGTH=$(echo $LINE | cut -d- -f4)
+			FORMAT=$(echo $LINE | cut -d- -f5)
+			
+			case "$FIELD" in
+    		    MT_DEB) POS_MT_DEB=$LENGTH; FORMAT_MT_DEB=$FORMAT;;
+    		    MT_INDE) POS_MT_INDE=$LENGTH; FORMAT_MT_INDE=$FORMAT;;
+    		    MT_PRES) POS_MT_PRES=$LENGTH; FORMAT_MT_PRES=$FORMAT;;
+    		    MT_IMPAGO) POS_MT_IMPAGO=$LENGTH; FORMAT_MT_IMPAGO=$FORMAT;;
+    		    MT_INNODE) POS_MT_INNODE=$LENGTH; FORMAT_MT_INNODE=$FORMAT;;
+				CTB_FE) POS_CTB_FE=$LENGTH; FORMAT_CTB_FE=$FORMAT;;
+    		    CTB_ESTADO) POS_CTB_ESTADO=$LENGTH; FORMAT_CTB_ESTADO=$FORMAT;;
+    		    PRES_ID) POS_PRES_ID=$LENGTH; FORMAT_PRES_ID=$FORMAT;;
+				PRES_TI) POS_PRES_TI=$LENGTH; FORMAT_PRES_TI=$FORMAT;;
+    		    PRES_CLI) POS_PRES_CLI=$LENGTH; FORMAT_PRES_CLI=$FORMAT;;
+				PRES_CLI_ID) POS_PRES_CLI_ID=$LENGTH; FORMAT_PRES_CLI_ID=$FORMAT;;
+    		esac
+		fi
+	done < "$MASTER/T2.tab"
+
+	initOutputVariables
+	while read LINE; do
+
+		processReportVariable MT_DEB $POS_MT_DEB
+		processReportVariable MT_INDE $POS_MT_INDE
+		processReportVariable MT_PRES $POS_MT_PRES
+		processReportVariable MT_IMPAGO $POS_MT_IMPAGO
+		processReportVariable MT_INNODE $POS_MT_INNODE
+		processReportVariable CTB_FE $POS_CTB_FE
+		processReportVariable CTB_ESTADO $POS_CTB_ESTADO
+		processReportVariable PRES_ID $POS_PRES_ID
+		processReportVariable PRES_TI $POS_PRES_TI
+		processReportVariable PRES_CLI $POS_PRES_CLI
+		processReportVariable PRES_CLI_ID $POS_PRES_CLI_ID
+
+		replaceDecimalPoint MT_DEB
+		replaceDecimalPoint MT_INDE
+		replaceDecimalPoint MT_PRES
+		replaceDecimalPoint MT_IMPAGO
+		replaceDecimalPoint MT_INNODE
+
+		FORMAT_CTB_FE=$(tr --delete '.' <<< $FORMAT_CTB_FE)
+		reformatDate CTB_ANIO CTB_MES CTB_DIA $CTB_FE $FORMAT_CTB_FE
+
+		MT_REST=$(awk "BEGIN { print $MT_PRES + $MT_IMPAGO + $MT_INDE + $MT_INNODE - $MT_DEB }")
+
+		echo "(FILE: $FILE) Variables:"
+		echo "MT_REST: $MT_REST"
+		echo "MT_DEB: $MT_DEB"
+		echo "MT_INDE: $MT_INDE"
+		echo "MT_PRES: $MT_PRES"
+		echo "MT_IMPAGO: $MT_IMPAGO"
+		echo "MT_INNODE: $MT_INNODE"
+		echo "CTB_FE: $CTB_FE"
+		echo "CTB_ANIO: $CTB_ANIO"
+		echo "CTB_MES: $CTB_MES"
+		echo "CTB_DIA: $CTB_DIA"
+		echo "CTB_ESTADO: $CTB_ESTADO"
+		echo "PRES_ID: $PRES_ID"
+		echo "PRES_TI: $PRES_TI"
+		echo "PRES_CLI: $PRES_CLI"
+
+	done < "$ACCEPTED/$FILE"
+
+done
