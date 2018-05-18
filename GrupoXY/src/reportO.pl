@@ -65,19 +65,24 @@ while ($linea = <ENTRADA>)
 }
 
 
-#print "@ppi\n";
-#print "@ppi[0]\n";
-#print "@ppi[1]\n";
-#print "@ppi[2]\n";
-#print "@ppi[3]\n";
-#print %ppi[0];
 
-for $href ( @ppi ) {
-    print "{ ";
-    for $role ( keys %$href ) {
-         print "$role=$href->{$role} ";
-    }
-    print "}\n";
+
+my @restanteMaestro = ();
+
+for $i(@ppi)
+{
+	$restante = $i->{"MT_PRES"} + $i->{"MT_IMPAGO"} + $i->{"MT_INDE"} + $i->{"MT_INNODE"} - $i->{"MT_DEB"};
+	push @restanteMaestro,$restante;
 }
+
+print "@restanteMaestro\n";
+
+#for $href ( @ppi ) {
+#    print "{ ";
+#    for $role ( keys %$href ) {
+#         print "$role=$href->{$role},\n ";
+#    }
+#    print "}\n";
+#}
 
 
