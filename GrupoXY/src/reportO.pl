@@ -35,29 +35,17 @@ my @MT_DEB = ();
 my @variables = (); #este array almacenará los valores de cada línea separados
 
 my @ppi = ();
-$i = 0;
+
+
+#lectura de PPI.mae
+
+
 
 while ($linea = <ENTRADA>)
 {
 	@variables = split(/;/,$linea);
-
-	my %fila = ();
-	$fila{"PAIS_ID"} = $variables[0];
-	$fila{"SIS_ID"} = $variables[1];
-	$fila{"CTB_ANIO"} = $variables[2];
-	$fila{"CTB_MES"} = $variables[3];
-	$fila{"CTB_DIA"} = $variables[4];
-	$fila{"CTB_ESTADO"} = $variables[5];
-	$fila{"PRES_FE"} = $variables[6];
-	$fila{"PRES_ID"} = $variables[7];
-	$fila{"PRES_TI"} = $variables[8];
-	$fila{"MT_PRES"} = $variables[9];
-	$fila{"MT_IMPAGO"} = $variables[10];
-	$fila{"MT_INDE"} = $variables[11];
-	$fila{"MT_INNODE"} = $variables[12];
-	$fila{"MT_DEB"} = $variables[13];
 	
-	push @ppi,{PAIS_ID => $variables[0], SIS_ID => $variables[1], CTB_ANIO => $variables[2], CTB_MES => $variables[3],
+	push @ppi, {PAIS_ID => $variables[0], SIS_ID => $variables[1], CTB_ANIO => $variables[2], CTB_MES => $variables[3],
 	CTB_DIA => $variables[4], CTB_ESTADO => $variables[5], PRES_FE => $variables[6], PRES_ID => $variables[7],
 	PRES_TI => $variables[8], MT_PRES => $variables[9], MT_IMPAGO => $variables[10], MT_INDE => $variables[11],
 	MT_INNODE => $variables[12], MT_DEB => $variables[13]  } ;
@@ -65,8 +53,7 @@ while ($linea = <ENTRADA>)
 }
 
 
-
-
+#CÁLCULO DEL MONTO RESTANTE DEL MAESTRO
 my @restanteMaestro = ();
 
 for $i(@ppi)
@@ -75,7 +62,24 @@ for $i(@ppi)
 	push @restanteMaestro,$restante;
 }
 
-print "@restanteMaestro\n";
+
+#LECTURA DE prestamos.pais:
+$file = "prestamos." . $codPais;
+open(ENTRADA,"<$file");
+my @prestamos = ();
+while ($linea = <ENTRADA>)
+{
+	@variables = split(/;/,$linea);
+	
+	push @prestamos, {SIS_ID => $variables[0], CTB_ANIO => $variables[1], CTB_MES => $variables[2], CTB_DIA => $variables[3],CTB_ESTADO => $variables[4], PRES_ID => $variables[5], MT_PRES => $variables[6], MT_IMPAGO => $variables[7], MT_INDE => $variables[8], MT_INNODE => $variables[9], MT_DEB => $variables[10], MT_REST => $variables[11], PRES_CLI_ID => $variables[12], PRES_CLI => $variables[13], INS_FE => $variables[14], INS_USER => $variables[15] } ;
+}
+
+print "$file\n";
+print "$prestamos[0]->{INS_USER}\n";
+
+
+
+
 
 #for $href ( @ppi ) {
 #    print "{ ";
