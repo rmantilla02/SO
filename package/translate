@@ -1,4 +1,5 @@
 ACCEPTED="$HOME/Grupo06/files/accepted"
+PROCESSED="$HOME/Grupo06/files/processed"
 MASTER="$HOME/Grupo06/master"
 
 initFormatVariables() {
@@ -63,6 +64,22 @@ reformatDate() {
 		eval "$2=${4:2:2}"
 		eval "$3=${4:0:2}"
 	fi
+}
+
+getCountry() {
+	while read -r LINE; do
+	    if [[ -z $LINE ]]; then continue; fi
+	
+		if [[ "$2" == "${LINE:0:1}" ]]; then 
+			eval "$1=$(echo $LINE | cut -d- -f2)"
+			break
+		fi
+	done < "$MASTER/p-s.mae"
+}
+
+saveData() {
+	if [ ! -f $PROCESSED/PRESTAMOS.$1 ]; then touch $PROCESSED/PRESTAMOS.$1; fi
+	echo $2 >> $PROCESSED/PRESTAMOS.$1
 }
 
 for FILE in $(ls $ACCEPTED); do
@@ -131,7 +148,8 @@ for FILE in $(ls $ACCEPTED); do
 
 		MT_REST=$(awk "BEGIN { print $MT_PRES + $MT_IMPAGO + $MT_INDE + $MT_INNODE - $MT_DEB }")
 
-		echo "$SIS_ID;$CTB_ANIO;$CTB_MES;$CTB_DIA;$CTB_ESTADO;$PRES_ID;$MT_PRES;$MT_IMPAGO;$MT_INDE;$MT_INNODE;$MT_DEB;$MT_REST;$PRES_CLI_ID;$PRES_CLI;$(date +%d/%m/%Y);$(whoami)"
+		getCountry COUNTRY ${CONTROL_SYSTEM:0:1}
+		saveData $COUNTRY "$SIS_ID;$CTB_ANIO;$CTB_MES;$CTB_DIA;$CTB_ESTADO;$PRES_ID;$MT_PRES;$MT_IMPAGO;$MT_INDE;$MT_INNODE;$MT_DEB;$MT_REST;$PRES_CLI_ID;$PRES_CLI;$(date +%d/%m/%Y);$(whoami)"
 
 	done < "$ACCEPTED/$FILE"
 
