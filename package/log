@@ -1,30 +1,31 @@
-# Este script es una biblioteca. Para invocarla use 'source log.sh'
+#!/bin/bash
+# This script is a library. To use it, just type "source log.sh"
+MAX_LINES=5000
 
-# Guarde el nombre del log en la variable LOGFILE.
+# Save the LOGFILE name.
 if [ ! -v LOGFILE ]; then LOGFILE=log; else LOGFILE+=".log"; fi
 
-# Añade un registro al log de la forma "[yyyy-mm-dd hh:mm:ss] <args>" donde args son los argumentos de la funcion.
+# Add a log register with the format "[Date (YYYY-MM-DD HH:MM:SS) - User - Caller - Level] Log".
 function log() {
     if [ ! -v DIRCONF ] || [ ! -d $DIRCONF ]; then return; fi
-    echo [$(date "+%F %T")-$(whoami)-"$1"-"$2"] "$3" >> $DIRCONF/$LOGFILE
+    echo "$2": [$(date "+%F %T") - $(whoami) - "$1"] "${@:3}" >> $DIRCONF/$LOGFILE
+    if (( $(wc -l $DIRCONF/$LOGFILE | awk '{ print $1 }') > MAX_LINES )); then truncate; fi
 }
 
-infoLog() {
+info() {
 	log $1 "INFO" $2
 }
 
-warnLog() {
+warn() {
 	log $1 "WARN" $2
 }
 
-errorLog() {
+error() {
 	log $1 "ERROR" $2
 }
 
+# Truncate the LOGFILE leaving just the last $MAX_LINES lines.
 function truncate() {
-    # n es el primer argumento de truncate, o 500 por default.
-    local n=${1:-500}
-    tmp=$(mktemp)
-    tail $DIRCONF/$LOGFILE -n $n > tmp
-    mv tmp $DIRCONF/$LOGFILE
+    tail $DIRCONF/$LOGFILE -n $MAX_LINES > $DIRCONF/tmp
+    mv $DIRCONF/tmp $DIRCONF/$LOGFILE
 }

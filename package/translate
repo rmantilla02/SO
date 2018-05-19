@@ -1,5 +1,12 @@
-ACCEPTED="$HOME/Grupo06/files/accepted"
-PROCESSED="$HOME/Grupo06/files/processed"
+#!/bin/bash
+export GRUPO="$HOME/Grupo06"
+export DIRCONF="$GRUPO/.dirconf"
+LOGFILE="translate"
+source ./log
+
+ACCEPTED="$HOME/Grupo06/accepted"
+PROCESSED="$HOME/Grupo06/processed"
+REJECTED="$HOME/Grupo06/rejected"
 MASTER="$HOME/Grupo06/master"
 
 initFormatVariables() {
@@ -25,10 +32,12 @@ initFormatVariables() {
 	FORMAT_PRES_TI=""
 	FORMAT_PRES_CLI=""
 	FORMAT_PRES_CLI_ID=""
+	info "initFormatVariables" "Every format variable is setted in 0."
 }
 
 initOutputVariables() {
 	MT_REST=0
+	info "initOutputVariables" "MT_REST is setted in 0."
 }
 
 processReportVariable() {
@@ -38,11 +47,13 @@ processReportVariable() {
 	else
 		eval "$1=0"
 	fi
+	info "processReportVariable" "The variable $1 was setted in ${!1}."
 }
 
 replaceDecimalPoint() {
 	if [ ${!1} != 0 ]; then
 		eval "$1=$(tr "$DECIMAL" "." <<< "${!1}")"
+		info "replaceDecimalPoint" "The decimal point of $1 be replaced with '.'."
 	fi
 }
 
@@ -64,47 +75,50 @@ reformatDate() {
 		eval "$2=${4:2:2}"
 		eval "$3=${4:0:2}"
 	fi
+	info "reformatDate" "The date format provided was $5."
 }
 
 getCountry() {
-	while read -r LINE; do
+	while read -r LINE || [ -n "$LINE" ]; do
 	    if [[ -z $LINE ]]; then continue; fi
-	
 		if [[ "$2" == "${LINE:0:1}" ]]; then 
 			eval "$1=$(echo $LINE | cut -d- -f2)"
+			info "getCountry" "The country of the current debt operation is ${!1}"
 			break
 		fi
 	done < "$MASTER/p-s.mae"
 }
 
 saveData() {
-	if [ ! -f $PROCESSED/PRESTAMOS.$1 ]; then touch $PROCESSED/PRESTAMOS.$1; fi
+	if [ ! -f $PROCESSED/PRESTAMOS.$1 ]; then 
+		info "saveData" "There's no PRESTAMOS file for $1. It'll be created."
+		touch $PROCESSED/PRESTAMOS.$1
+	fi
 	echo $2 >> $PROCESSED/PRESTAMOS.$1
+	info "saveData" "Debt saved to $PROCESSED/PRESTAMOS.$1"
 }
 
-for FILE in $(ls $ACCEPTED); do
-	SIS_ID=${FILE:2:1}
-	CONTROL_SYSTEM=${FILE:0:3}
+checkTodayDirectory() {
+	if [ ! -d "$PROCESSED/$1" ]; then 
+		info "checkTodayDirectory" "Today's directory was not created. It will be constructed now."
+		mkdir "$PROCESSED/$1"
+		eval "$2=0" 
+	else 
+		info "checkTodayDirectory" "Today's directory was already created."
+		eval "$2=1"
+	fi
+}
 
-	while read -r LINE; do
-	    if [[ -z $LINE ]]; then continue; fi
-	
-		if [[ "$CONTROL_SYSTEM" == "${LINE:0:3}" ]]; then 
-			SEPARATOR=$(echo $LINE | cut -d- -f3)
-			DECIMAL=$(echo $LINE | cut -d- -f4)
-			break
-		fi
-	done < "$MASTER/T1.tab"
-
+processWithMasterData() {
 	initFormatVariables
-
-	while read -r LINE; do
+	while read -r LINE || [ -n "$LINE" ]; do
 	    if [[ -z $LINE ]]; then continue; fi
-	
+		
 		if [[ "$CONTROL_SYSTEM" == "${LINE:0:3}" ]]; then 
 			FIELD=$(echo $LINE | cut -d- -f3)
 			LENGTH=$(echo $LINE | cut -d- -f4)
 			FORMAT=$(echo $LINE | cut -d- -f5)
+			info "processWithMasterData" "The T2's data line was parsed as: FIELD: $FIELD - LENGTH: $LENGTH - FORMAT: $FORMAT."
 			
 			case "$FIELD" in
     		    MT_DEB) POS_MT_DEB=$LENGTH; FORMAT_MT_DEB=$FORMAT;;
@@ -123,7 +137,7 @@ for FILE in $(ls $ACCEPTED); do
 	done < "$MASTER/T2.tab"
 
 	initOutputVariables
-	while read LINE; do
+	while read -r LINE || [ -n "$LINE" ]; do
 
 		processReportVariable MT_DEB $POS_MT_DEB
 		processReportVariable MT_INDE $POS_MT_INDE
@@ -144,13 +158,81 @@ for FILE in $(ls $ACCEPTED); do
 		replaceDecimalPoint MT_INNODE
 
 		FORMAT_CTB_FE=$(tr --delete '.' <<< $FORMAT_CTB_FE)
+		info "processWithMasterData" "CTB Date was trimmed."
 		reformatDate CTB_ANIO CTB_MES CTB_DIA $CTB_FE $FORMAT_CTB_FE
 
 		MT_REST=$(awk "BEGIN { print $MT_PRES + $MT_IMPAGO + $MT_INDE + $MT_INNODE - $MT_DEB }")
+		info "processWithMasterData" "The result was calculated as MT_PRES + MT_IMPAGO + MT_INDE + MT_INNODE - MT_DEB = MT_REST"
+		info "processWithMasterData" "The previous operation gives $MT_PRES + $MT_IMPAGO + $MT_INDE + $MT_INNODE - $MT_DEB = $MT_REST"
 
 		getCountry COUNTRY ${CONTROL_SYSTEM:0:1}
 		saveData $COUNTRY "$SIS_ID;$CTB_ANIO;$CTB_MES;$CTB_DIA;$CTB_ESTADO;$PRES_ID;$MT_PRES;$MT_IMPAGO;$MT_INDE;$MT_INNODE;$MT_DEB;$MT_REST;$PRES_CLI_ID;$PRES_CLI;$(date +%d/%m/%Y);$(whoami)"
 
 	done < "$ACCEPTED/$FILE"
+	mv $ACCEPTED/$FILE $PROCESSED/$TODAY_DIRECTORY
+}
+
+processNew() {
+	SIS_ID=${FILE:2:1}
+	CONTROL_SYSTEM=${FILE:0:3}
+	info "processNew" "System ID processed is $SIS_ID."
+	info "processNew" "Control System processed is $CONTROL_SYSTEM."
+
+	unset MASTER_FOUND
+	while read LINE || [ -n "$LINE" ]; do
+	    if [[ -z $LINE ]]; then continue; fi
+
+		if [[ "$CONTROL_SYSTEM" == "${LINE:0:3}" ]]; then 
+			MASTER_FOUND=1
+			SEPARATOR=$(echo $LINE | cut -d- -f3)
+			DECIMAL=$(echo $LINE | cut -d- -f4)
+			info "processNew" "Decimal point was sent as '$DECIMAL.'"
+			info "processNew" "Record separator was sent as '$SEPARATOR.'"
+			break
+		fi
+	done < "$MASTER/T1.tab"
+
+	if [ $MASTER_FOUND ]; then
+		processWithMasterData
+	else
+		error "processNew" "The given Control System was not reported in the Master Table ($CONTROL_SYSTEM)."
+		rejectFile
+	fi
+}
+
+checkDuplicated() {
+	PROCESSED_FILES=$(ls $PROCESSED/$TODAY_DIRECTORY)
+	for COMP_FILE in $PROCESSED_FILES; do
+		if [ "$COMP_FILE"  == "$FILE" ]; then
+			warn "checkDuplicated" "The file $FILE was already processed today. It'll be dropped at rejected."
+			eval "$1=1"
+			break
+		fi
+	done
+}
+
+rejectFile() {
+	touch $REJECTED/$FILE
+	mv --backup=numbered $ACCEPTED/$FILE $REJECTED
+	rm $REJECTED/$FILE
+	info "rejectFile" "$FILE moved to rejected folder ($REJECTED)."
+}
+
+TODAY_DIRECTORY=$(date +%Y-%m-%d)
+checkTodayDirectory $TODAY_DIRECTORY EXISTING_DIRECTORY
+ACCEPTED_FILES=$(ls $ACCEPTED)
+
+for FILE in $ACCEPTED_FILES; do
+	
+	DUPLICATED=0
+	if [ $EXISTING_DIRECTORY == 1 ]; then checkDuplicated DUPLICATED; fi
+
+	if [ $DUPLICATED == 0 ]; then
+		info "main" "Processing new input."
+		processNew
+	else
+		warn "main" "Duplicated input dropped."
+		rejectFile
+	fi
 
 done

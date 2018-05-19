@@ -1,3 +1,6 @@
+#!/bin/bash
+export GRUPO=$HOME/Grupo06
+export DIRCONF=$GRUPO/.dirconf
 LOGFILE=start
 source ./log
 
@@ -31,26 +34,40 @@ done < "$HOME/Grupo06/.dirconf/installation.conf"
 for DIRECTORY in EXECUTABLES MASTER ARRIVAL ACCEPTED REJECTED PROCESSED REPORTS LOGS; do
     if [ ! -v $DIRECTORY ]; then
         echo "There's no $DIRECTORY in the configuration file."
+        error "main" "There's no $DIRECTORY in the configuration file."
     elif [ ! -d ${!DIRECTORY} ]; then
         report "$DIRECTORY directory doesn't exist."
+        error "main" "$DIRECTORY directory doesn't exist."
     fi
 done
 
 # VERIFYING / UPDATEING PERMISSIONS.
 find "$MASTER" -type f -exec chmod u+r {} +
 find "$EXECUTABLES" -type f -exec chmod u+x {} +
-infoLog "main" "Permissions changed in Master and Executables files."
+info "main" "Permissions changed in Master and Executables files."
 echo "Permissions changed in Master and Executables files."
 
 # EXPORTING VARIABLES
-export $EXECUTABLES
-export $MASTER
-export $ARRIVAL
-export $ACCEPTED
-export $REJECTED
-export $PROCESSED
-export $REPORTS
-export $LOGS
+export GRUPO
+info "main" "Variable GRUPO exported."
+export DIRCONF
+info "main" "Variable DIRCONF exported."
+export EXECUTABLES
+info "main" "Variable EXECUTABLES exported."
+export MASTER
+info "main" "Variable MASTER exported."
+export ARRIVAL
+info "main" "Variable ARRIVAL exported"
+export ACCEPTED
+info "main" "Variable ACCEPTED exported"
+export REJECTED
+info "main" "Variable REJECTED exported"
+export PROCESSED
+info "main" "Variable PROCESSED exported"
+export REPORTS
+info "main" "Variable REPORTS exported"
+export LOGS
+info "main" "Variable LOGS exported"
 
 # STARTING DAEMON
 $EXECUTABLES/detectO.sh &
