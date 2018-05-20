@@ -34,12 +34,12 @@ while($otraComparativa eq "Y")
 	while ($linea1 = <ENTRADA1>)
 	{
 		@variables = split(/;/,$linea1);
-		
+
 		push @ppi, {PAIS_ID => $variables[0], SIS_ID => $variables[1], CTB_ANIO => $variables[2], CTB_MES => $variables[3],
 		CTB_DIA => $variables[4], CTB_ESTADO => $variables[5], PRES_FE => $variables[6], PRES_ID => $variables[7],
 		PRES_TI => $variables[8], MT_PRES => $variables[9], MT_IMPAGO => $variables[10], MT_INDE => $variables[11],
 		MT_INNODE => $variables[12], MT_DEB => $variables[13]  } ;
-		
+
 	}
 
 
@@ -84,7 +84,7 @@ while($otraComparativa eq "Y")
 
 	#RECOMENDACIÓN
 	#Se determina la posición que se va a comparar
-	
+
 
 	print "---------------------------RECOMENDACIÓN-----------------------\n\n";
 	$mayor = "0";
@@ -98,12 +98,12 @@ while($otraComparativa eq "Y")
 		open(ENTRADA3,"<$file");
 		while($linea2 = <ENTRADA3>)
 		{
-			if ($ppi[$i]->{"PRES_ID"} eq $prestamos[$j]->{"PRES_ID"} and $ppi[$i]->{"CTB_ANIO"} eq $prestamos[$j]->{"CTB_ANIO"} and $ppi[$i]->{"CTB_MES"} eq $prestamos[$j]->{"CTB_MES"})
+			if ($ppi[$i]->{"PRES_ID"} eq $prestamos[$j]->{"PRES_ID"} and $ppi[$i]->{"CTB_ANIO"} eq $prestamos[$j]->{"CTB_ANIO"} and $ppi[$i]->{"CTB_MES"} eq $prestamos[$j]->{"CTB_MES"} and $ppi[$i]->{"SIS_ID"} eq $codSistema and $prestamos[$j]->{"SIS_ID"} eq $codSistema)
 			{
 				push @posicionSeleccionada, $i;
 				push @posicionSeleccionada, $j;
 			}
-			$j = $j + 1;		
+			$j = $j + 1;
 		}
 		$i = $i + 1;
 	}
@@ -126,7 +126,7 @@ while($otraComparativa eq "Y")
 		{
 			$recomendacion = "RECAL";
 		}
-		
+
 
 		$diferencia = $restanteMaestro[$posicionSeleccionada[$i]] - $prestamos[$posicionSeleccionada[$i+1]]->{"MT_REST"};
 
@@ -185,7 +185,14 @@ while ($otraConsulta eq "Y")
 		{
 			@variables = split(/;/,$linea);
 			$difPesos = $variables[8];
-			$difPorcentaje = sprintf("%.2f",abs(($difPesos * 100) / $variables[6]));
+			if ($variables[6] == 0)
+			{
+				$difPorcentaje = 0;
+			}
+			else
+			{
+					$difPorcentaje = sprintf("%.2f",abs(($difPesos * 100) / $variables[6]));
+			}
 			if ($difPorcentaje > $porcentaje)
 			{
 				push @reportePorcentaje, {	M_REST => $variables[6],
@@ -296,4 +303,3 @@ while ($consultaPesos eq "Y")
 		$consultaPesos = "";
 	}
 }
-
