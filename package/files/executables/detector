@@ -52,7 +52,7 @@ function processFile() {
     fi
 
     # validacion de nombre
-    if ! [[ $name =~ [^_]+-[^_]+-[^_]+-[^_]+\.txt ]]; then
+    if ! [[ $name =~ [^_]+-[^_]+-[^_]+-[^_] ]]; then
         echo "Invalid file name"
         rejectFile $1 "invalid file name"; return;
     fi
