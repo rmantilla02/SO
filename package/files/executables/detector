@@ -41,7 +41,7 @@ function acceptFile() {
 }
 
 function processFile() {
-	
+
     local name=$(basename $1)
 
     echo "Process file: " $name
@@ -77,7 +77,7 @@ function processFile() {
             break
         fi
 
-    done < $MAESTROS/p-s.mae
+    done < $MASTER/p-s.mae
 
     # If the system is not present in the p-s.mae it's rejected.
     if [ "$exist" = "false" ]; then
@@ -110,7 +110,7 @@ for (( ciclo = 1; ; ciclo++ )); do
 
     if [ -z "$(ls -A $ARRIVAL)" ]; then continue; fi
     for file in $ARRIVAL/*; do processFile $file; done
-    
+
     if [ ! -z "$(ls -A $ACCEPTED)" ];
         info "main" "Calling the translater."
         echo "Calling the translater."

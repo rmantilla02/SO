@@ -70,6 +70,6 @@ export LOGS
 info "main" "Variable LOGS exported"
 
 # STARTING DAEMON
-$EXECUTABLES/detectO.sh &
+$EXECUTABLES/detector &
 export PID_DEMON=$!
 echo "Daemon started with process ID $PID_DEMON."
