@@ -1,5 +1,17 @@
 #!/bin/perl
 
+use DateTime::Format::Strptime;
+
+
+sub compararFechas
+{
+
+}
+
+
+$patronFecha = new DateTime::Format::Strptime(pattern => '%d%m%Y');
+
+
 
 $otraComparativa = "Y";
 while($otraComparativa eq "Y")
@@ -12,12 +24,14 @@ while($otraComparativa eq "Y")
 	print "Ingrese el código del sistema: ";
 	$codSistema = <STDIN>;
 	chomp($codSistema);
-	print "Ingrese la fecha inicial del período: ";
+	print "Ingrese la fecha inicial del período (formato DD/MM/AAAA CON BARRAS): ";
 	$inicialPeriodo = <STDIN>;
 	chomp($inicialPeriodo);
-	print "Ingrese la fecha final del periódo: ";
+	@fechaInicial = split(///,$inicialPeriodo);
+	print "Ingrese la fecha final del periódo (formato DD/MM/AAAA CON BARRAS): ";
 	$finalPeriodo = <STDIN>;
 	chomp($finalPeriodo);
+	@fechaFinal = split(///,$finalPeriodo);
 
 	$maestro = "PPI.mae";
 	open(ENTRADA1,"<$maestro") || die "ERROR: No se puede abrir el archivo maestro";
