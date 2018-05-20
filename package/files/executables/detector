@@ -1,0 +1,118 @@
+#!/bin/bash
+LOGFILE=detector
+source ./log
+
+# Moving files function.
+function moveFile() {
+    local dir=${1:? No arguments call}; shift
+    if ! [ -d $dir ]; then
+        echo "Argument 1 $1 was not a directory." >&2
+    fi
+
+    for file in $@; do
+        local bn=$(basename $file)
+        local dest="$dir/$bn"
+
+        if [ -f $dest ]; then
+            # A subdirectory dup is created if hte file already exists in Rejected files.
+            mkdir --parents $dir/dup
+            local dup=$(ls $dir/dup | grep "^[0-9][0-9]$bn" | tail --lines=1)
+            local nro=${dup::2}
+            nro=$(printf %02d $(($nro + 1)))
+            dest="$dir/dup/$nro$bn"
+        fi
+
+        mv $file $dest
+    done
+}
+
+# Rejects a file and log it.
+# The second argument it's an optional log message.
+function rejectFile() {
+    moveFile $REJECTED ${1:?"No arguments reject call"}
+    info "rejectFile" "archivo rechazado: $(basename $1)${2:+, $2}"
+    echo "Rejected file: " $(basename $1)
+}
+
+function acceptFile() {
+    moveFile $ACCEPTED ${1?"No arguments accept call"}
+    log archivo aceptado: $(basename $1)
+    echo "Accepted file: " $(basename $1)
+}
+
+function processFile() {
+	
+    local name=$(basename $1)
+
+    echo "Process file: " $name
+
+#   validamos que el archivo no esté vacío
+    if ! [ -s $1 ]; then
+        rejectFile $1 "empty file"; return;
+    fi
+
+    # validacion de nombre
+    if ! [[ $name =~ [^_]+-[^_]+-[^_]+-[^_]+\.txt ]]; then
+        echo "Invalid file name"
+        rejectFile $1 "invalid file name"; return;
+    fi
+
+    local noext=${name%.*}
+    IFS='-' read -r -a array <<< "$noext"
+
+    country=${array[0]}
+    system=${array[1]}
+    year=${array[2]}
+    month=${array[3]}
+
+    # Country and system validation.
+    exist=false
+    while read -r line; do
+        IFS='-' read -r -a array <<< "$line"
+        country_aux=${array[0]}
+        system_aux=${array[2]}
+
+        if [ $country = $country_aux ] && [ $system = $system_aux ]; then
+            exist=true
+            break
+        fi
+
+    done < $MAESTROS/p-s.mae
+
+    # If the system is not present in the p-s.mae it's rejected.
+    if [ "$exist" = "false" ]; then
+        echo "The current file is not present in the system's master table."
+        rejectFile $1 "update rejected"; return;
+    fi
+
+    if [ "$year" -lt 2016 ]; then
+        echo "Year before 2016: " $year
+        rejectFile $1 "update rejected"; return;
+    fi
+
+    # validacion de mes
+    echo "Month: " $month
+    if [ "$month" -lt 1 ] || [ "$month" -gt 12 ]; then
+        echo "Invalid month"
+        rejectFile $1 "update rejected"; return;
+    fi
+
+    acceptFile $1
+}
+
+
+for (( ciclo = 1; ; ciclo++ )); do
+    info "main" "Iteration " $ciclo
+    echo "Iteration " $ciclo
+    if [ $(($ciclo%100)) -eq 0 ]; then truncate; fi
+
+    sleep 7
+
+    if [ -z "$(ls -A $ARRIVAL)" ]; then continue; fi
+    for file in $ARRIVAL/*; do processFile $file; done
+    
+    if [ ! -z "$(ls -A $ACCEPTED)" ];
+        info "main" "Calling the translater."
+        echo "Calling the translater."
+    	then $EXECUTABLES/translate; fi
+done
