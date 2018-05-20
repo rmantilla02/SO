@@ -6,7 +6,7 @@ source log.sh
 
 # function para mover los archivos
 function moveFile() {
-    local dir=${1:? llamado sin argumentos}; shift
+    local dir=${1}; shift
     if ! [ -d $dir ]; then
         echo "argumento 1 $1 no era un directorio" >&2
     fi
@@ -32,22 +32,22 @@ function moveFile() {
 #
 # El segundo argumento es un mensaje opcional que se agrega al log.
 function rejectFile() {
-    moveFile $RECHAZADOS ${1:?"rechazar llamado sin argumentos"}
-    log archivo rechazado: $(basename $1)${2:+, $2}
-    echo "archivo rechazado: " $(basename $1)
+    moveFile $REJECTED_DIR ${1}
+    # log archivo rechazado: $(basename $1)${2:+, $2}
+    infoLog "rejectFile" "archivo rechazado $1"
+    # echo "archivo rechazado: " $(basename $1)
 }
 
 function acceptFile() {
-    moveFile $ACEPTADOS ${1?"aceptar llamado sin argumentos"}
-    log archivo aceptado: $(basename $1)
-    echo "archivo aceptado: " $(basename $1)
+    moveFile $ACCEPTED_DIR ${1}
+    # log archivo aceptado: $(basename $1)
+    infoLog "acceptFile" "archivo aceptado $1"
+    # echo "archivo aceptado: " $(basename $1)
 }
 
 function processFile() {
 	
     local name=$(basename $1)
-
-    echo "processFile: " $name
 
 #   validamos que el archivo no esté vacío
     if ! [ -s $1 ]; then
@@ -57,7 +57,8 @@ function processFile() {
     # validacion de nombre
     if ! [[ $name =~ [^_]+-[^_]+-[^_]+-[^_]+\.txt ]]; then
         echo "nombre archivo invalido"
-        rejectFile $1 "nombre de archivo inválido"; return;
+        infoLog "processFile" "nombre de archivo inválido"
+        rejectFile $1; return;
     fi
 
     local noext=${name%.*}
@@ -87,24 +88,24 @@ function processFile() {
             break
         fi
 
-    done < $MAESTROS/p-s.mae
+    done < $MASTER_DIR/p-s.mae
 
     # si no existe en p-s.mae se rechaza
     if [ "$exist" = "false" ]; then
-        echo "no existe el archivo en maestro"
-        rejectFile $1 "novedad rechazada"; return;
+        infoLog "processFile" "el archivo no existe en P-S.mae"
+        rejectFile $1; return;
     fi
 
     if [ "$year" -lt 2016 ]; then
-        echo "año menor a 2016: " $year
-        rejectFile $1 "novedad rechazada"; return;
+        infoLog "processFile" "año inválido."
+        rejectFile $1; return;
     fi
 
     # validacion de mes
     echo "mes: " $month
     if [ "$month" -lt 1 ] || [ "$month" -gt 12 ]; then
-        echo "mes invalido"
-        rejectFile $1 "novedad rechazada"; return;
+        infoLog "processFile" "mes inválido."
+        rejectFile $1; return;
     fi
 
     acceptFile $1
@@ -112,17 +113,19 @@ function processFile() {
 
 
 for (( ciclo = 1; ; ciclo++ )); do
-    log "ciclo número: " $ciclo
+    # log "ciclo número: " $ciclo
+    infoLog "processFile" "ciclo número: " $ciclo
     echo "ciclo número: " $ciclo
     if [ $(($ciclo%100)) -eq 0 ]; then truncate; fi
 
     sleep 7
 
-    if [ -z "$(ls -A $ARRIBOS)" ]; then continue; fi
-    for file in $ARRIBOS/*; do processFile $file; done
+    if [ -z "$(ls -A $ARRIVAL_DIR)" ]; then continue; fi
+    for file in $ARRIVAL_DIR/*; do processFile $file; done
     
-    if [ ! -z "$(ls -A $ACEPTADOS)" ];
-    	log "invocando a interpretO"
+    if [ ! -z "$(ls -A $ACCEPTED_DIR)" ];
+    	log "detecO" "se invoca al interpretO"
     	echo "invocando a interpretO"
-    	then $EJECUTABLES/interpretO.sh; fi
+    	then $BIN_DIR/interpretO.sh;
+    fi
 done

@@ -47,5 +47,5 @@ find "$EJECUTABLES" -type f -exec chmod u+x {} +
 # ARRANCAR EL DEMONIO
 
 $EJECUTABLES/detectO.sh &
-export PID_DEMONIO=$!
-echo "Demonio iniciado con id de proceso $PID_DEMONIO"
+export PID_DAEMON=$!
+echo "Demonio iniciado con id de proceso $PID_DAEMON"
