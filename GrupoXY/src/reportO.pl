@@ -5,11 +5,16 @@ use DateTime::Format::Strptime;
 
 sub compararFechas
 {
+	$inicial = $_[0];
+	$final = $_[1];
+	$comparada = $_[2];
+
+	if (DateTime->compare($incial,$comparada) <= 0 )
 
 }
 
 
-$patronFecha = new DateTime::Format::Strptime(pattern => '%d%m%Y');
+$patronFecha = new DateTime::Format::Strptime(pattern => '%d/%m/%Y');
 
 
 
@@ -27,11 +32,13 @@ while($otraComparativa eq "Y")
 	print "Ingrese la fecha inicial del período (formato DD/MM/AAAA CON BARRAS): ";
 	$inicialPeriodo = <STDIN>;
 	chomp($inicialPeriodo);
-	@fechaInicial = split(///,$inicialPeriodo);
+	$fechaInicial = $patronFecha->parse_datetime($inicialPeriodo);
 	print "Ingrese la fecha final del periódo (formato DD/MM/AAAA CON BARRAS): ";
 	$finalPeriodo = <STDIN>;
 	chomp($finalPeriodo);
-	@fechaFinal = split(///,$finalPeriodo);
+	$fechaFinal = $patronFecha->parse_datetime($finalPeriodo);
+
+
 
 	$maestro = "PPI.mae";
 	open(ENTRADA1,"<$maestro") || die "ERROR: No se puede abrir el archivo maestro";
