@@ -1,6 +1,7 @@
 #!/bin/bash
 export GRUPO=$HOME/Grupo06
 export DIRCONF=$GRUPO/.dirconf
+LOGS_DIRECORY=$DIRCONF
 LOGFILE=start
 source ./log
 

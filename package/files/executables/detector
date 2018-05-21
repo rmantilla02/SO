@@ -1,5 +1,6 @@
 #!/bin/bash
 LOGFILE=detector
+LOGS_DIRECORY=$LOGS
 source ./log
 
 # Moving files function.

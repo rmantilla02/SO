@@ -7,9 +7,9 @@ if [ ! -v LOGFILE ]; then LOGFILE=log; else LOGFILE+=".log"; fi
 
 # Add a log register with the format "[Date (YYYY-MM-DD HH:MM:SS) - User - Caller - Level] Log".
 function log() {
-    if [ ! -v LOGS ] || [ ! -d $LOGS ]; then return; fi
-    echo "$2": [$(date "+%F %T") - $(whoami) - "$1"] "${@:3}" >> $LOGS/$LOGFILE
-    if (( $(wc -l $LOGS/$LOGFILE | awk '{ print $1 }') > MAX_LINES )); then truncate; fi
+    if [ ! -v LOGS_DIRECORY ] || [ ! -d $LOGS_DIRECORY ]; then return; fi
+    echo "$2": [$(date "+%F %T") - $(whoami) - "$1"] "${@:3}" >> $LOGS_DIRECORY/$LOGFILE
+    if (( $(wc -l $LOGS_DIRECORY/$LOGFILE | awk '{ print $1 }') > MAX_LINES )); then truncate; fi
 }
 
 info() {
@@ -26,6 +26,6 @@ error() {
 
 # Truncate the LOGFILE leaving just the last $MAX_LINES lines.
 function truncate() {
-    tail $LOGS/$LOGFILE -n $MAX_LINES > $LOGS/tmp
-    mv $LOGS/tmp $LOGS/$LOGFILE
+    tail $LOGS_DIRECORY/$LOGFILE -n $MAX_LINES > $LOGS_DIRECORY/tmp
+    mv $LOGS_DIRECORY/tmp $LOGS_DIRECORY/$LOGFILE
 }
