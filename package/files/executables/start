@@ -5,6 +5,10 @@ LOGS_DIRECORY=$DIRCONF
 LOGFILE=start
 source ./log
 
+saveDaemon() {
+    echo "DaemonPID-$PID_DEMON" >> $DIRCONF/installation.conf
+}
+
 # REPORT IF SOMETHING GOES WRONG
 function report() {
     echo -e "\e[1;31m$1\e[0m"
@@ -29,7 +33,7 @@ while read LINE; do
         Logs) export LOGS=$DIRS_PATH;;
     esac
 
-done < "$HOME/Grupo06/.dirconf/installation.conf"
+done < "$DIRCONF/installation.conf"
 
 # VERIFYING DIRECTORIES
 for DIRECTORY in EXECUTABLES MASTER ARRIVAL ACCEPTED REJECTED PROCESSED REPORTS LOGS; do
@@ -74,3 +78,4 @@ info "main" "Variable LOGS exported"
 $EXECUTABLES/detector &
 export PID_DEMON=$!
 echo "Daemon started with process ID $PID_DEMON."
+saveDaemon PID_DEMON

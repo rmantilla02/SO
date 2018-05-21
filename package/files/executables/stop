@@ -5,8 +5,30 @@ LOGS_DIRECORY=$DIRCONF
 LOGFILE=stop
 source ./log
 
+getDaemonPID() {
+	while read LINE; do
+    	if [[ -z $LINE ]]; then continue; fi
+	
+	    FIELD=$(echo "$LINE" | cut -d- -f1)
+	    PID=$(echo "$LINE" | cut -d- -f2)
+	
+    	# Get Daemon line and get PID.
+    	case "$FIELD" in
+    	    DaemonPID) PID_DAEMON=$(echo "$LINE" | cut -d- -f2);;
+    	esac
+
+	done < "$DIRCONF/installation.conf"
+}
+
+removeDaemonPID() {
+	head -n -1 "$DIRCONF/installation.conf" > $DIRCONF/installation.conf.tmp
+	mv $DIRCONF/installation.conf.tmp $DIRCONF/installation.conf
+}
+
+getDaemonPID
+
 if [ ! -v PID_DAEMON ]; then 
-	echo "The daemon is not running."
+	echo "The Daemon is not running."
 	warn "main" "Daemon was not running when it was attempted to kill."
 	exit
 fi
@@ -14,3 +36,4 @@ fi
 kill $PID_DAEMON
 echo "Daemon killed." $PID_DAEMON
 info "main" "Daemon with PID $PID_DAEMON killed."
+removeDaemonPID

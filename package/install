@@ -307,21 +307,21 @@ createConfigurationFile() {
 	touch $DIRCONF/installation.conf
 	info "createConfigurationFile" "Installation configuration file created."
 
-	echo "Executables-$EXE_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Executables-$EXE_FILES_DIR-$(whoami)-$(date "+%d/%m/%Y %H:%M:%s")" >> $DIRCONF/installation.conf
 	info "createConfigurationFile"  "Executables files directory wrote to installation configuration file."
-	echo "Master-$MASTER_FILES_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Master-$MASTER_FILES_DIR-$(whoami)-$(date "+%d/%m/%Y %H:%M:%s")" >> $DIRCONF/installation.conf
 	info "createConfigurationFile"  "Master files directory wrote to installation configuration file."
-	echo "Arrival-$ARRIVAL_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Arrival-$ARRIVAL_DIR-$(whoami)-$(date "+%d/%m/%Y %H:%M:%s")" >> $DIRCONF/installation.conf
 	info "createConfigurationFile"  "Arrival files directory wrote to installation configuration file."
-	echo "Accepted-$ACCEPTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Accepted-$ACCEPTED_DIR-$(whoami)-$(date "+%d/%m/%Y %H:%M:%s")" >> $DIRCONF/installation.conf
 	info "createConfigurationFile"  "Accepted files directory wrote to installation configuration file."
-	echo "Rejected-$REJECTED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Rejected-$REJECTED_DIR-$(whoami)-$(date "+%d/%m/%Y %H:%M:%s")" >> $DIRCONF/installation.conf
 	info "createConfigurationFile"  "Rejected files directory wrote to installation configuration file."
-	echo "Processed-$PROCESSED_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Processed-$PROCESSED_DIR-$(whoami)-$(date "+%d/%m/%Y %H:%M:%s")" >> $DIRCONF/installation.conf
 	info "createConfigurationFile"  "Processed files directory wrote to installation configuration file."
-	echo "Reports-$REPORTS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Reports-$REPORTS_DIR-$(whoami)-$(date "+%d/%m/%Y %H:%M:%s")" >> $DIRCONF/installation.conf
 	info "createConfigurationFile"  "Reports directory wrote to installation configuration file."
-	echo "Logs-$LOGS_DIR-$(whoami)-$(date "+%F %T")" >> $DIRCONF/installation.conf
+	echo "Logs-$LOGS_DIR-$(whoami)-$(date "+%d/%m/%Y %H:%M:%s")" >> $DIRCONF/installation.conf
 	info "createConfigurationFile"  "Logs directory wrote to installation configuration file."
 	echo -n "Creating configuration file"
 	info "createConfigurationFile"  "Installation configuration file succesfully wrote."
