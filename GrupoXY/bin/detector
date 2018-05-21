@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOGFILE=daemon
+LOGFILE=detector
 source log.sh
 
 

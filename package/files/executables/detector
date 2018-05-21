@@ -30,21 +30,21 @@ function moveFile() {
 # The second argument it's an optional log message.
 function rejectFile() {
     moveFile $REJECTED ${1:?"No arguments reject call"}
-    info "rejectFile" "archivo rechazado: $(basename $1)${2:+, $2}"
     echo "Rejected file: " $(basename $1)
+    info "rejectFile" "archivo rechazado: $(basename $1)${2:+, $2}"
 }
 
 function acceptFile() {
     moveFile $ACCEPTED ${1?"No arguments accept call"}
-    log archivo aceptado: $(basename $1)
     echo "Accepted file: " $(basename $1)
+    log archivo aceptado: $(basename $1)
 }
 
 function processFile() {
 
     local name=$(basename $1)
 
-    echo "Process file: " $name
+    # echo "Process file: " $name
 
 #   validamos que el archivo no esté vacío
     if ! [ -s $1 ]; then
@@ -91,9 +91,16 @@ function processFile() {
     fi
 
     # validacion de mes
-    echo "Month: " $month
+    #echo "Month: " $month
     if [ "$month" -lt 1 ] || [ "$month" -gt 12 ]; then
         echo "Invalid month"
+        rejectFile $1 "update rejected"; return;
+    fi
+
+    # valicacion de periodo
+    # todo: sacar harcodeo del periodo
+    if [ "$year" -gt 2017 ] && [ "$month" -gt 05 ]; then
+        echo "Invalid period"
         rejectFile $1 "update rejected"; return;
     fi
 
@@ -114,5 +121,5 @@ for (( ciclo = 1; ; ciclo++ )); do
     if [ ! -z "$(ls -A $ACCEPTED)" ];
         info "main" "Calling the translater."
         echo "Calling the translater."
-    	then $EXECUTABLES/translate; fi
+        then $EXECUTABLES/translate; fi
 done
