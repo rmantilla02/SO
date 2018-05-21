@@ -34,6 +34,6 @@ if [ ! -v PID_DAEMON ]; then
 fi
 
 kill $PID_DAEMON
-echo "Daemon killed." $PID_DAEMON
+echo "Daemon with PID $PID_DAEMON killed."
 info "main" "Daemon with PID $PID_DAEMON killed."
 removeDaemonPID
