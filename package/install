@@ -2,7 +2,7 @@
 # Installation command for CONTROL system.
 export GRUPO="$HOME/Grupo06"
 export DIRCONF="$GRUPO/.dirconf"
-LOGS_DIRECORY=$DIRCONF
+LOGS_DIRECTORY=$DIRCONF
 LOGFILE="install"
 source ./files/executables/log
 

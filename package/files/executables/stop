@@ -1,7 +1,7 @@
 #!/bin/bash
 GRUPO=$HOME/Grupo06
 DIRCONF=$GRUPO/.dirconf
-LOGS_DIRECORY=$DIRCONF
+LOGS_DIRECTORY=$DIRCONF
 LOGFILE=stop
 source ./log
 
@@ -10,7 +10,6 @@ getDaemonPID() {
     	if [[ -z $LINE ]]; then continue; fi
 	
 	    FIELD=$(echo "$LINE" | cut -d- -f1)
-	    PID=$(echo "$LINE" | cut -d- -f2)
 	
     	# Get Daemon line and get PID.
     	case "$FIELD" in
