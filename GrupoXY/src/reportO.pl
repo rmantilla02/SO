@@ -8,13 +8,20 @@ sub compararFechas
 	$inicial = $_[0];
 	$final = $_[1];
 	$comparada = $_[2];
-
-	if (DateTime->compare($incial,$comparada) <= 0 )
+	print "$comparada $inicial $final \n";
+	if (DateTime->compare_ignore_floating($incial,$comparada) <= 0 and DateTime->compare_ignore_floating($comparada,$final) <= 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 
 }
 
 
-$patronFecha = new DateTime::Format::Strptime(pattern => '%d/%m/%Y');
+$patronFecha = DateTime::Format::Strptime->new(pattern => '%d/%m/%Y');
 
 
 
@@ -29,18 +36,18 @@ while($otraComparativa eq "Y")
 	print "Ingrese el código del sistema: ";
 	$codSistema = <STDIN>;
 	chomp($codSistema);
-	print "Ingrese la fecha inicial del período (formato DD/MM/AAAA CON BARRAS): ";
-	$inicialPeriodo = <STDIN>;
-	chomp($inicialPeriodo);
-	$fechaInicial = $patronFecha->parse_datetime($inicialPeriodo);
-	print "Ingrese la fecha final del periódo (formato DD/MM/AAAA CON BARRAS): ";
-	$finalPeriodo = <STDIN>;
-	chomp($finalPeriodo);
-	$fechaFinal = $patronFecha->parse_datetime($finalPeriodo);
+	#print "Ingrese la fecha inicial del período (formato DD/MM/AAAA CON BARRAS): ";
+	#$inicialPeriodo = <STDIN>;
+	#chomp($inicialPeriodo);
+	#$fechaInicial = $patronFecha->parse_datetime($inicialPeriodo);
+	#print "Ingrese la fecha final del periódo (formato DD/MM/AAAA CON BARRAS): ";
+	#$finalPeriodo = <STDIN>;
+	#chomp($finalPeriodo);
+	#$fechaFinal = $patronFecha->parse_datetime($finalPeriodo);
 
 
 
-	$maestro = "PPI.mae";
+	$maestro = "../master/PPI.mae";
 	open(ENTRADA1,"<$maestro") || die "ERROR: No se puede abrir el archivo maestro";
 
 	my @variables = (); #este array almacenará los valores de cada línea separados
@@ -67,7 +74,7 @@ while($otraComparativa eq "Y")
 
 	#SE AVERIGUA EL NOMBRE DEL PAÍS
 	#Se lee el archivo p-s.mae
-	open(ENTRADA2,"<p-s.mae");
+	open(ENTRADA2,"<../master/p-s.mae");
 	while($linea = <ENTRADA2>)
 	{
 		@variables = split(/-/,$linea);
@@ -91,7 +98,7 @@ while($otraComparativa eq "Y")
 
 
 	#LECTURA DE prestamos.pais:
-	$file = "prestamos." . $nombrePais;
+	$file = "../processed/prestamos." . $nombrePais;
 	open(ENTRADA3,"<$file");
 	my @prestamos = ();
 	while ($linea = <ENTRADA3>)
@@ -119,7 +126,9 @@ while($otraComparativa eq "Y")
 		open(ENTRADA3,"<$file");
 		while($linea2 = <ENTRADA3>)
 		{
-			if ($ppi[$i]->{"PRES_ID"} eq $prestamos[$j]->{"PRES_ID"} and $ppi[$i]->{"CTB_ANIO"} eq $prestamos[$j]->{"CTB_ANIO"} and $ppi[$i]->{"CTB_MES"} eq $prestamos[$j]->{"CTB_MES"} and $ppi[$i]->{"SIS_ID"} eq $codSistema and $prestamos[$j]->{"SIS_ID"} eq $codSistema)
+			#$fechaEvaluada = $patronFecha->parse_datetime($ppi[$i]->{"PRES_FE"});
+			#print "$fechaEvaluada $fechaInicial $fechaFinal \n";
+			if ($ppi[$i]->{"PRES_ID"} eq $prestamos[$j]->{"PRES_ID"} and $ppi[$i]->{"CTB_ANIO"} eq $prestamos[$j]->{"CTB_ANIO"} and $ppi[$i]->{"CTB_MES"} eq $prestamos[$j]->{"CTB_MES"} and $ppi[$i]->{"SIS_ID"} eq $codSistema and $prestamos[$j]->{"SIS_ID"} eq $codSistema) #and compararFechas($fechaInicial,$fechaFinal,$fechaEvaluada) == 1)
 			{
 				push @posicionSeleccionada, $i;
 				push @posicionSeleccionada, $j;
@@ -174,7 +183,7 @@ while($otraComparativa eq "Y")
 		print "$i->{PAIS}\t$i->{SISID}\t$i->{PRESID}\t$i->{RECO}\t$i->{M_ESTADO}\t$i->{P_ESTADO}\t$i->{M_REST}\t$i->{P_REST}\t$i->{DIF}\t$i->{ANIO}\t$i->{MES}\t$i->{DIA}\n";
 		if (@ARGV != () and $ARGV[0] == "-g")
 		{
-			$escritura = "comparado." . $nombrePais;
+			$escritura = "../reports/comparado." . $nombrePais;
 			open(SALIDA,">>$escritura");
 			print SALIDA "$i->{PAIS};$i->{SISID};$i->{PRESID};$i->{RECO};$i->{M_ESTADO};$i->{P_ESTADO};$i->{M_REST};$i->{P_REST};$i->{DIF};$i->{ANIO};$i->{MES};$i->{DIA}\n";
 		}
@@ -196,7 +205,7 @@ while ($otraConsulta eq "Y")
 	print "\n\nIngresar porcentaje de referencia: ";
 	$porcentaje = <STDIN>;
 	chomp($porcentaje);
-	$comparado = "comparado." . $nombrePais;
+	$comparado = "../reports/comparado." . $nombrePais;
 	if (-e $comparado)
 	{
 		@reportePorcentaje = ();
@@ -233,11 +242,11 @@ while ($otraConsulta eq "Y")
 
 		print "PAIS_ID\tSIS_ID\tPRES_ID\tRECOMENDACIÓN\tMAESTRO\tPRÉSTAMOS\tDIFERENCIA\tDIFERENCIA(%)\n\n";
 		$consecutivo = "1";
-		$file = "divPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
+		$file = "../reports/divPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
 		while (-e $file)
 		{
 			$consecutivo = $consecutivo + 1;
-			$file = "divPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
+			$file = "../reports/divPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
 		}
 		for $i (@reportePorcentaje)
 		{
@@ -270,7 +279,7 @@ while ($consultaPesos eq "Y")
 	print "\n\nIngresar valor de referencia en pesos: ";
 	$pesos = <STDIN>;
 	chomp($pesos);
-	$comparado = "comparado." . $nombrePais;
+	$comparado = "../reports/comparado." . $nombrePais;
 	if (-e $comparado)
 	{
 		@reportePesos = ();
@@ -298,11 +307,11 @@ while ($consultaPesos eq "Y")
 
 		print "PAIS_ID\tSIS_ID\tPRES_ID\tRECOMENDACIÓN\tMAESTRO\tPRÉSTAMOS\tDIFERENCIA\n\n";
 		$consecutivo = "1";
-		$file = "divPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
+		$file = "../reports/divPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
 		while (-e $file)
 		{
 			$consecutivo = $consecutivo + 1;
-			$file = "divPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
+			$file = "../reports/divPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
 		}
 		for $i (@reportePesos)
 		{
