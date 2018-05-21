@@ -24,6 +24,29 @@ sub compararFechas
 $patronFecha = DateTime::Format::Strptime->new(pattern => '%d/%m/%Y');
 
 
+#Detectar la ruta del archivo de configuracion
+$HOME = $ENV{'HOME'};
+$dirconf = "$HOME/Grupo06/.dirconf/installation.conf";
+open(entradaMaster,"<$dirconf") || die "No se puede leer el archivo de configuracion";
+while($linea = <entradaMaster>)
+{
+	@variables = split(/-/,$linea);
+	if ($variables[0] eq "Master")
+	{
+		$dirMaster = $variables[1];
+	}
+	if ($variables[0] eq "Processed")
+	{
+		$dirProcessed = $variables[1];
+	}
+	if ($variables[0] eq "Reports")
+	{
+		$dirReports = $variables[1];
+	}
+}
+
+
+
 
 $otraComparativa = "Y";
 while($otraComparativa eq "Y")
@@ -46,13 +69,12 @@ while($otraComparativa eq "Y")
 	#$fechaFinal = $patronFecha->parse_datetime($finalPeriodo);
 
 
+$maestro = "$dirMaster/PPI.mae";
+open(ENTRADA1,"<$maestro") || die "ERROR: No se puede abrir el archivo maestro";
 
-	$maestro = "../master/PPI.mae";
-	open(ENTRADA1,"<$maestro") || die "ERROR: No se puede abrir el archivo maestro";
+my @variables = (); #este array almacenará los valores de cada línea separados
 
-	my @variables = (); #este array almacenará los valores de cada línea separados
-
-	my @ppi = ();
+my @ppi = ();
 
 
 	#lectura de PPI.mae
@@ -74,7 +96,8 @@ while($otraComparativa eq "Y")
 
 	#SE AVERIGUA EL NOMBRE DEL PAÍS
 	#Se lee el archivo p-s.mae
-	open(ENTRADA2,"<../master/p-s.mae");
+	$psMae = "$dirMaster/p-s.mae";
+	open(ENTRADA2,$psMae) || die "ERROR: NO se puede abrir archivo p-s.mae";
 	while($linea = <ENTRADA2>)
 	{
 		@variables = split(/-/,$linea);
@@ -98,8 +121,8 @@ while($otraComparativa eq "Y")
 
 
 	#LECTURA DE prestamos.pais:
-	$file = "../processed/prestamos." . $nombrePais;
-	open(ENTRADA3,"<$file");
+	$file = "$dirProcessed/prestamos.$nombrePais";
+	open(ENTRADA3,"<$file") || die "No se puede abrir archivo de prestamos.$nombrePais";
 	my @prestamos = ();
 	while ($linea = <ENTRADA3>)
 	{
@@ -183,7 +206,7 @@ while($otraComparativa eq "Y")
 		print "$i->{PAIS}\t$i->{SISID}\t$i->{PRESID}\t$i->{RECO}\t$i->{M_ESTADO}\t$i->{P_ESTADO}\t$i->{M_REST}\t$i->{P_REST}\t$i->{DIF}\t$i->{ANIO}\t$i->{MES}\t$i->{DIA}\n";
 		if (@ARGV != () and $ARGV[0] == "-g")
 		{
-			$escritura = "../reports/comparado." . $nombrePais;
+			$escritura = "$dirReports/comparado." . $nombrePais;
 			open(SALIDA,">>$escritura");
 			print SALIDA "$i->{PAIS};$i->{SISID};$i->{PRESID};$i->{RECO};$i->{M_ESTADO};$i->{P_ESTADO};$i->{M_REST};$i->{P_REST};$i->{DIF};$i->{ANIO};$i->{MES};$i->{DIA}\n";
 		}
@@ -205,7 +228,7 @@ while ($otraConsulta eq "Y")
 	print "\n\nIngresar porcentaje de referencia: ";
 	$porcentaje = <STDIN>;
 	chomp($porcentaje);
-	$comparado = "../reports/comparado." . $nombrePais;
+	$comparado = "$dirReports/comparado." . $nombrePais;
 	if (-e $comparado)
 	{
 		@reportePorcentaje = ();
@@ -242,11 +265,11 @@ while ($otraConsulta eq "Y")
 
 		print "PAIS_ID\tSIS_ID\tPRES_ID\tRECOMENDACIÓN\tMAESTRO\tPRÉSTAMOS\tDIFERENCIA\tDIFERENCIA(%)\n\n";
 		$consecutivo = "1";
-		$file = "../reports/divPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
+		$file = "$dirReports/reportDivPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
 		while (-e $file)
 		{
 			$consecutivo = $consecutivo + 1;
-			$file = "../reports/divPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
+			$file = "$dirReports/reportDivPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
 		}
 		for $i (@reportePorcentaje)
 		{
@@ -279,7 +302,7 @@ while ($consultaPesos eq "Y")
 	print "\n\nIngresar valor de referencia en pesos: ";
 	$pesos = <STDIN>;
 	chomp($pesos);
-	$comparado = "../reports/comparado." . $nombrePais;
+	$comparado = "$dirReports/comparado." . $nombrePais;
 	if (-e $comparado)
 	{
 		@reportePesos = ();
@@ -307,11 +330,11 @@ while ($consultaPesos eq "Y")
 
 		print "PAIS_ID\tSIS_ID\tPRES_ID\tRECOMENDACIÓN\tMAESTRO\tPRÉSTAMOS\tDIFERENCIA\n\n";
 		$consecutivo = "1";
-		$file = "../reports/divPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
+		$file = "$dirReports/reportDivPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
 		while (-e $file)
 		{
 			$consecutivo = $consecutivo + 1;
-			$file = "../reports/divPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
+			$file = "$dirReports/reportDivPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
 		}
 		for $i (@reportePesos)
 		{
