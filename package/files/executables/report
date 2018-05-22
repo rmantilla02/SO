@@ -1,26 +1,5 @@
 #!/usr/bin/perl
 
-use DateTime::Format::Strptime;
-
-sub compararFechas
-{
-	$inicial = $_[0];
-	$final = $_[1];
-	$comparada = $_[2];
-	print "$comparada $inicial $final \n";
-	if (DateTime->compare_ignore_floating($incial,$comparada) <= 0 and DateTime->compare_ignore_floating($comparada,$final) <= 0)
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-
-}
-
-
-$patronFecha = DateTime::Format::Strptime->new(pattern => '%d/%m/%Y');
 
 
 #Detectar la ruta del archivo de configuracion
