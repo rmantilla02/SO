@@ -1,6 +1,4 @@
 #!/bin/bash
-export GRUPO="$HOME/Grupo06"
-export DIRCONF="$GRUPO/.dirconf"
 LOGS_DIRECORY=$LOGS
 LOGFILE="translate"
 source ./log
@@ -227,21 +225,25 @@ rejectFile() {
 	info "rejectFile" "$FILE moved to rejected folder ($REJECTED)."
 }
 
-TODAY_DIRECTORY=$(date +%Y-%m-%d)
-checkTodayDirectory $TODAY_DIRECTORY EXISTING_DIRECTORY
-ACCEPTED_FILES=$(ls $ACCEPTED)
+if [ $GRUPO ]; then
 
-for FILE in $ACCEPTED_FILES; do
-	
-	DUPLICATED=0
-	if [ $EXISTING_DIRECTORY == 1 ]; then checkDuplicated DUPLICATED; fi
+	TODAY_DIRECTORY=$(date +%Y-%m-%d)
+	checkTodayDirectory $TODAY_DIRECTORY EXISTING_DIRECTORY
+	ACCEPTED_FILES=$(ls $ACCEPTED)
 
-	if [ $DUPLICATED == 0 ]; then
-		info "main" "Processing new input."
-		processNew
-	else
-		warn "main" "Duplicated input dropped."
-		rejectFile
-	fi
+	for FILE in $ACCEPTED_FILES; do	
+		DUPLICATED=0
+		if [ $EXISTING_DIRECTORY == 1 ]; then checkDuplicated DUPLICATED; fi
 
-done
+		if [ $DUPLICATED == 0 ]; then
+			info "main" "Processing new input."
+			processNew
+		else
+			warn "main" "Duplicated input dropped."
+			rejectFile
+		fi
+	done
+
+else
+	echo "The system is not properly started."
+fi
