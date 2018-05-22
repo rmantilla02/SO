@@ -108,10 +108,12 @@ function processFile() {
     acceptFile $1
 }
 
+ITERATION=1
 while true; do
-    ITERATION=1
 
     info "main" "Iteration N° + $ITERATION"
+
+    # echo "Iteration: " $ITERATION
 
     ARRIVED_FILES=$(ls $ARRIVAL)
     for FILE in $ARRIVED_FILES; do processFile "$ARRIVAL/$FILE"; done
@@ -126,5 +128,5 @@ while true; do
 
     sleep 11
 
-    ITERATION=$ITERATION+1
+    ((ITERATION++))
 done
