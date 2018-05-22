@@ -49,7 +49,6 @@ done
 # VERIFYING / UPDATING PERMISSIONS.
 find "$MASTER" -type f -exec chmod u+r {} +
 find "$EXECUTABLES" -type f -exec chmod u+x {} +
-find "$LOGS" -type f -exec chmod u+x {} +
 info "main" "Permissions changed in Master and Executables files."
 echo "Permissions changed in Master and Executables files."
 
