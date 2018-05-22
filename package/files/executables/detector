@@ -111,8 +111,6 @@ function processFile() {
 while true; do
     ITERATION=1
 
-    sleep 11
-
     info "main" "Iteration N° + $ITERATION"
 
     ARRIVED_FILES=$(ls $ARRIVAL)
@@ -125,6 +123,8 @@ while true; do
         echo "Calling the Translater."
         $EXECUTABLES/translate
     fi
-    
+
+    sleep 11
+
     ITERATION=$ITERATION+1
 done
