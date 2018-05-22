@@ -128,5 +128,12 @@ while true; do
 
     sleep 11
 
+    LOGS_FILES=$(ls $LOGS_DIRECTORY)
+    for FILE in $LOGS_FILES; do
+        # echo "file: " "$LOGS_DIRECTORY/$FILE"
+        truncate --size=300KB "$LOGS_DIRECTORY/$FILE"
+        info "main" "log truncate"
+    done
+
     ((ITERATION++))
 done
