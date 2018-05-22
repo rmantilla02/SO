@@ -26,6 +26,6 @@ error() {
 
 # Truncate the LOGFILE leaving just the last $MAX_LINES lines.
 function truncate() {
-    tail $LOGS_DIRECTORY/$LOGFILE -n $((MAX_LINES/2)) > "$LOGS_DIRECTORY/tmp"
+    tail $LOGS_DIRECTORY/$LOGFILE -n $MAX_LINES > "$LOGS_DIRECTORY/tmp"
     mv "$LOGS_DIRECTORY/tmp" "$LOGS_DIRECTORY/$LOGFILE"
 }
