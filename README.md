@@ -7,4 +7,4 @@ Installation       	Estado: 100%
 Start		       	Estado: 80%
 Detect		       	Estado: ?
 Translate		   	Estado: ?
-Report       		Estado: 95%
+Report       		Estado: 100%

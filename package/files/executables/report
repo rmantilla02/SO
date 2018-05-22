@@ -121,8 +121,8 @@ my @ppi = ();
 
 
 	#LECTURA DE prestamos.pais:
-	$file = "$dirProcessed/prestamos.$nombrePais";
-	open(ENTRADA3,"<$file") || die "No se puede abrir archivo de prestamos.$nombrePais";
+	$file = "$dirProcessed/PRESTAMOS.$nombrePais";
+	open(ENTRADA3,"<$file") || die "No se puede abrir archivo de $file";
 	my @prestamos = ();
 	while ($linea = <ENTRADA3>)
 	{
@@ -352,7 +352,7 @@ while ($consultaPesos eq "Y")
 	}
 	else
 	{
-		print "ERROR: El archivo $comparado no existe aún. Ejecute primero el comando perl reportO.pl -g e ingrese el código de $nombrePais cuando se lo soliciten.\n\n";
+		print "ERROR: El archivo $comparado no existe aún. Ejecute primero el comando perl report -g e ingrese el código de $nombrePais cuando se lo soliciten.\n\n";
 		$consultaPesos = "";
 	}
 }
