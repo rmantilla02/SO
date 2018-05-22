@@ -1,5 +1,6 @@
 #!/bin/bash
 LOGFILE=detector
+LOGS_DIRECTORY=$LOGS
 source ./log
 
 # Moving files function.
@@ -107,19 +108,20 @@ function processFile() {
     acceptFile $1
 }
 
+while true; do
+    ITERATION=1
+    info "main" "Iteration N° + $ITERATION"
 
-for (( ciclo = 1; ; ciclo++ )); do
-    info "main" "Iteration " $ciclo
-    echo "Iteration " $ciclo
-    if [ $(($ciclo%100)) -eq 0 ]; then truncate; fi
+    ARRIVED_FILES=$(ls $ARRIVAL)
+    for FILE in $ARRIVED_FILES; do processFile "$ARRIVAL/$FILE"; done
 
-    sleep 7
+    ACCEPTED_FILES=$(ls $ACCEPTED)
+    TRANSLATER_ACTIVATED=$(ps -ax | grep "translate" | grep -v "grep" | wc -l)
+    if [ "$ACCEPTED_FILES" -a $TRANSLATER_ACTIVATED==0 ]; then
+        info "main" "Calling the Translater."
+        echo "Calling the Translater."
+        $EXECUTABLES/translate
+    fi
 
-    if [ -z "$(ls -A $ARRIVAL)" ]; then continue; fi
-    for file in $ARRIVAL/*; do processFile $file; done
-
-    if [ ! -z "$(ls -A $ACCEPTED)" ];
-        info "main" "Calling the translater."
-        echo "Calling the translater."
-        then $EXECUTABLES/translate; fi
+    ITERATION=$ITERATION+1
 done
