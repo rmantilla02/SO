@@ -3,11 +3,6 @@ LOGS_DIRECORY=$LOGS
 LOGFILE="translate"
 source ./log
 
-ACCEPTED="$HOME/Grupo06/accepted"
-PROCESSED="$HOME/Grupo06/processed"
-REJECTED="$HOME/Grupo06/rejected"
-MASTER="$HOME/Grupo06/master"
-
 initFormatVariables() {
 	POS_MT_DEB=0
 	POS_MT_INDE=0
@@ -89,11 +84,11 @@ getCountry() {
 }
 
 saveData() {
-	if [ ! -f $PROCESSED/PRESTAMOS.$1 ]; then 
+	if [ ! -f "$PROCESSED/PRESTAMOS.$1" ]; then 
 		info "saveData" "There's no PRESTAMOS file for $1. It'll be created."
 		touch $PROCESSED/PRESTAMOS.$1
 	fi
-	echo $2 >> $PROCESSED/PRESTAMOS.$1
+	echo $2 >> "$PROCESSED/PRESTAMOS.$1"
 	info "saveData" "Debt saved to $PROCESSED/PRESTAMOS.$1"
 }
 
@@ -168,7 +163,7 @@ processWithMasterData() {
 		saveData $COUNTRY "$SIS_ID;$CTB_ANIO;$CTB_MES;$CTB_DIA;$CTB_ESTADO;$PRES_ID;$MT_PRES;$MT_IMPAGO;$MT_INDE;$MT_INNODE;$MT_DEB;$MT_REST;$PRES_CLI_ID;$PRES_CLI;$(date +%d/%m/%Y);$(whoami)"
 
 	done < "$ACCEPTED/$FILE"
-	mv $ACCEPTED/$FILE $PROCESSED/$TODAY_DIRECTORY
+	mv "$ACCEPTED/$FILE" "$PROCESSED/$TODAY_DIRECTORY"
 }
 
 processNew() {
@@ -211,17 +206,9 @@ checkDuplicated() {
 }
 
 rejectFile() {
-	echo "-------------------------------------- PRINTING BEFORE FIRST TOUCH --------------------------------------"
-	ls -alF $REJECTED
-	touch $REJECTED/$FILE
-	echo "-------------------------------------- PRINTING BEFORE BACKUP MOVE --------------------------------------"
-	ls -alF $REJECTED
-	mv --backup=numbered $ACCEPTED/$FILE $REJECTED
-	echo "-------------------------------------- PRINTING BEFORE LAST REMOVE --------------------------------------"
-	ls -alF $REJECTED
-	rm $REJECTED/$FILE
-	echo "--------------------------------------------- LAST PRINTING ---------------------------------------------"
-	ls -alF $REJECTED
+	touch "$REJECTED/$FILE"
+	mv --backup=numbered "$ACCEPTED/$FILE" "$REJECTED"
+	rm "$REJECTED/$FILE"
 	info "rejectFile" "$FILE moved to rejected folder ($REJECTED)."
 }
 

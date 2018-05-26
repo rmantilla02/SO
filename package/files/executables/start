@@ -1,9 +1,4 @@
 #!/bin/bash
-export GRUPO=$HOME/Grupo06
-export DIRCONF=$GRUPO/.dirconf
-LOGS_DIRECTORY=$DIRCONF
-LOGFILE=start
-source ./log
 
 saveDaemon() {
     echo "DaemonPID-$PID_DEMON" >> $DIRCONF/installation.conf
@@ -33,7 +28,11 @@ while read LINE; do
         Logs) export LOGS=$DIRS_PATH;;
     esac
 
-done < "$DIRCONF/installation.conf"
+done < "$HOME/Grupo06/.dirconf/installation.conf"
+
+LOGS_DIRECTORY=$LOGS
+LOGFILE=start
+source ./log
 
 # VERIFYING DIRECTORIES
 for DIRECTORY in EXECUTABLES MASTER ARRIVAL ACCEPTED REJECTED PROCESSED REPORTS LOGS; do

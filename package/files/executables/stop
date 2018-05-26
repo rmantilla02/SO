@@ -1,7 +1,5 @@
 #!/bin/bash
-GRUPO=$HOME/Grupo06
-DIRCONF=$GRUPO/.dirconf
-LOGS_DIRECTORY=$DIRCONF
+LOGS_DIRECTORY=$LOGS
 LOGFILE=stop
 source ./log
 
