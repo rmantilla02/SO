@@ -1,16 +1,18 @@
 #!/bin/bash
+GRUPO=$HOME/Grupo06
+DIRCONF=$GRUPO/.dirconf
 
 saveDaemon() {
     echo "DaemonPID-$PID_DEMON" >> $DIRCONF/installation.conf
 }
 
 # REPORT IF SOMETHING GOES WRONG
-function report() {
+report() {
     echo -e "\e[1;31m$1\e[0m"
     echo -e "\e[1;31mTo repair the current system run './instalĺ -r'\e[0m"
 }
 
-while read LINE; do
+while read -r LINE; do
     if [[ -z $LINE ]]; then continue; fi
 
     DIRS_KEY=$(echo "$LINE" | cut -d- -f1)

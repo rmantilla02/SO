@@ -22,6 +22,29 @@ removeDaemonPID() {
 	mv $DIRCONF/installation.conf.tmp $DIRCONF/installation.conf
 }
 
+unsetVariables() {
+	unset GRUPO
+	info "unsetVariables" "Unsetting variable GRUPO."
+	unset DIRCONF
+	info "unsetVariables" "Unsetting variable DIRCONF."
+	unset EXECUTABLES
+	info "unsetVariables" "Unsetting variable EXECUTABLES."
+	unset MASTER
+	info "unsetVariables" "Unsetting variable MASTER."
+	unset ARRIVAL
+	info "unsetVariables" "Unsetting variable ARRIVAL."
+	unset ACCEPTED
+	info "unsetVariables" "Unsetting variable ACCEPTED."
+	unset REJECTED
+	info "unsetVariables" "Unsetting variable REJECTED."
+	unset PROCESSED
+	info "unsetVariables" "Unsetting variable PROCESSED."
+	unset REPORTS
+	info "unsetVariables" "Unsetting variable REPORTS."
+	unset LOGS
+	info "unsetVariables" "Unsetting variable LOGS."
+}
+
 getDaemonPID
 
 if [ ! -v PID_DAEMON ]; then 
@@ -34,3 +57,4 @@ kill $PID_DAEMON
 echo "Daemon with PID $PID_DAEMON killed."
 info "main" "Daemon with PID $PID_DAEMON killed."
 removeDaemonPID
+unsetVariables
