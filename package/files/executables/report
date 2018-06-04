@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+use feature qw(switch);
+system("clear");
+
 
 
 #Detectar la ruta del archivo de configuracion
@@ -21,16 +24,62 @@ while($linea = <entradaMaster>)
 		$dirReports = $variables[1];
 	}
 }
-
-
-
-
-$otraComparativa = "Y";
-while($otraComparativa eq "Y")
-{
+sub menu {
 	system("clear");
 	print "----------------------------- Report ------------------------------\n";
-	print "Type country code: ";
+	print "1 -> Recomendation\n";
+	print "2 -> Percentage Difference\n";
+	print "3 -> Pesos Difference\n";
+	print "4 -> Exit\n";
+	print "Insert option: ";
+
+	given(<STDIN>){
+	  when(1) {	recommendation(); }
+	  when(2) {	perDif(); }
+		when(3) {	pesDif(); }
+		when(4) { print "Exit..\n";}
+	  default { print "Incorrect option \n";
+							sleep(1);
+							menu();
+						}
+	}
+}
+
+
+#AYUDA
+if (@ARGV != () and $ARGV[0] eq "-a") {
+	system("clear");
+	print "-------------------------------------------REPORT--------------------------\n";
+	print "Welcome to the report program\n";
+	print "You can choose between 3 options:\n";
+	print "1. Recommendation: Compare the master file with each prestamos file and recommends recalculate or no recalculate\n";
+	print "2. Percentage difference: Print (or save in a file called comparado) the loans with a percentage difference greater than a percentage read\n";
+	print "3. Pesos difference: Print (or save in a file called comparado) the loans with a pesos difference greater than a value read\n";
+	print "\n\n\n";
+	print "Options:\n";
+	print "-a: Print help info\n";
+	print "-g: Save the outputs in the reports directory\n\n";
+	print "NOTE: If you haven't execute this script before, you have to execute this script first with -g option";
+	print "\n\n";
+	print "Do you want to continue? (Y/N)";
+	$answer = <STDIN>;
+	chomp($answer);
+	if ($answer eq "Y") {
+		menu();
+	}
+	else{
+		die;
+	}
+}
+
+
+menu();
+#ingresarCod();
+
+
+
+sub recommendation {
+	print "\nType country code: ";
 	$codPais = <STDIN>;
 	chomp($codPais);
 	print "Type system code: ";
@@ -46,12 +95,12 @@ while($otraComparativa eq "Y")
 	#$fechaFinal = $patronFecha->parse_datetime($finalPeriodo);
 
 
-$maestro = "$dirMaster/PPI.mae";
-open(ENTRADA1,"<$maestro") || die "ERROR: Couldn't find master file.";
+	$maestro = "$dirMaster/PPI.mae";
+	open(ENTRADA1,"<$maestro") || die "ERROR: Couldn't find master file.";
 
-my @variables = (); #este array almacenará los valores de cada línea separados
+	my @variables = (); #este array almacenará los valores de cada línea separados
 
-my @ppi = ();
+	my @ppi = ();
 
 
 	#lectura de PPI.mae
@@ -73,6 +122,7 @@ my @ppi = ();
 
 	#SE AVERIGUA EL NOMBRE DEL PAÍS
 	#Se lee el archivo p-s.mae
+	$nombrePais = "";
 	$psMae = "$dirMaster/p-s.mae";
 	open(ENTRADA2,$psMae) || die "ERROR: Couldn't read file p-s.mae";
 	while($linea = <ENTRADA2>)
@@ -99,237 +149,460 @@ my @ppi = ();
 
 	#LECTURA DE prestamos.pais:
 	$file = "$dirProcessed/PRESTAMOS.$nombrePais";
-	open(ENTRADA3,"<$file") || die "Couldn't open file $file";
+	if (-e $file) {
+		open(ENTRADA3,"<$file") || die "Couldn't open file $file";
+	}
+	else
+	{
+		print "ERROR: The country code doesn't exist\n";
+		sleep(2);
+		menu();
+	}
+
 	my @prestamos = ();
 	while ($linea = <ENTRADA3>)
 	{
 		@variables = split(/;/,$linea);
 		push @prestamos, {SIS_ID => $variables[0], CTB_ANIO => $variables[1], CTB_MES => $variables[2], CTB_DIA => $variables[3],CTB_ESTADO => $variables[4], PRES_ID => $variables[5], MT_PRES => $variables[6], MT_IMPAGO => $variables[7], MT_INDE => $variables[8], MT_INNODE => $variables[9], MT_DEB => $variables[10], MT_REST => $variables[11], PRES_CLI_ID => $variables[12], PRES_CLI => $variables[13], INS_FE => $variables[14], INS_USER => $variables[15] } ;
 	}
-
-
-
-
-	#RECOMENDACIÓN
-	#Se determina la posición que se va a comparar
-
-
-	print "--------------------------- RECOMMENDATION -----------------------\n\n";
-	$mayor = "0";
-	$i = 0;
-	open(ENTRADA1,"<$maestro");
-	my @posicionMayor = ();
-	my @posicionSeleccionada = ();
-	while($linea1 = <ENTRADA1>)
+	$otraComparativa = "Y";
+	while($otraComparativa eq "Y")
 	{
-		$j = 0;
-		open(ENTRADA3,"<$file");
-		while($linea2 = <ENTRADA3>)
+		#system("clear");
+		#RECOMENDACIÓN
+		#Se determina la posición que se va a comparar
+		print "--------------------------- RECOMMENDATION -----------------------\n\n";
+		$mayor = "0";
+		$i = 0;
+		open(ENTRADA1,"<$maestro");
+		my @posicionMayor = ();
+		my @posicionSeleccionada = ();
+		while($linea1 = <ENTRADA1>)
 		{
-			#$fechaEvaluada = $patronFecha->parse_datetime($ppi[$i]->{"PRES_FE"});
-			#print "$fechaEvaluada $fechaInicial $fechaFinal \n";
-			if ($ppi[$i]->{"PRES_ID"} eq $prestamos[$j]->{"PRES_ID"} and $ppi[$i]->{"CTB_ANIO"} eq $prestamos[$j]->{"CTB_ANIO"} and $ppi[$i]->{"CTB_MES"} eq $prestamos[$j]->{"CTB_MES"} and $ppi[$i]->{"SIS_ID"} eq $codSistema and $prestamos[$j]->{"SIS_ID"} eq $codSistema) #and compararFechas($fechaInicial,$fechaFinal,$fechaEvaluada) == 1)
+			$j = 0;
+			open(ENTRADA3,"<$file");
+			while($linea2 = <ENTRADA3>)
 			{
-				push @posicionSeleccionada, $i;
-				push @posicionSeleccionada, $j;
+				if ($ppi[$i]->{"PRES_ID"} eq $prestamos[$j]->{"PRES_ID"} and $ppi[$i]->{"CTB_ANIO"} eq $prestamos[$j]->{"CTB_ANIO"} and $ppi[$i]->{"CTB_MES"} == $prestamos[$j]->{"CTB_MES"} and $ppi[$i]->{"SIS_ID"} eq $codSistema and $prestamos[$j]->{"SIS_ID"} eq $codSistema)
+				{
+					push @posicionSeleccionada, $i;
+					push @posicionSeleccionada, $j;
+				}
+				$j = $j + 1;
 			}
-			$j = $j + 1;
-		}
-		$i = $i + 1;
-	}
-
-
-
-
-	#Condiciones para la recomendación
-	$i = 0;
-	@reporteRecomendacion = ();
-	while($i < @posicionSeleccionada)
-	{
-		$recomendacion = "NO-RECAL";
-		if ($ppi[$posicionSeleccionada[$i]]->{"CTB_ESTADO"} eq "SMOR" and $prestamos[$posicionSeleccionada[$i + 1]]->{"CTB_ANIO"} ne "SMOR")
-		{
-			$recomendacion = "RECAL";
-		}
-
-		if($restanteMaestro[$posicionSeleccionada[$i]] lt $prestamos[$posicionSeleccionada[$i + 1]]->{"MT_REST"})
-		{
-			$recomendacion = "RECAL";
+			$i = $i + 1;
 		}
 
 
-		$diferencia = $restanteMaestro[$posicionSeleccionada[$i]] - $prestamos[$posicionSeleccionada[$i+1]]->{"MT_REST"};
 
-		push @reporteRecomendacion, {PAIS => $ppi[$posicionSeleccionada[$i]]->{"PAIS_ID"},
-									SISID => $ppi[$posicionSeleccionada[$i]]->{"SIS_ID"},
-									PRESID => $ppi[$posicionSeleccionada[$i]]->{"PRES_ID"},
-									RECO => $recomendacion,
-									M_ESTADO => $ppi[$posicionSeleccionada[$i]]->{"CTB_ESTADO"},
-									P_ESTADO => $prestamos[$posicionSeleccionada[$i + 1]]->{"CTB_ESTADO"},
-									M_REST => $restanteMaestro[$posicionSeleccionada[$i]],
-									P_REST => $prestamos[$posicionSeleccionada[$i + 1]]->{"MT_REST"},
-									DIF => $diferencia,
-									ANIO => $ppi[$posicionSeleccionada[$i]]->{"CTB_ANIO"},
-									MES => $ppi[$posicionSeleccionada[$i]]->{"CTB_MES"},
-									DIA => $ppi[$posicionSeleccionada[$i]]->{"CTB_DIA"}
-									};
-		$i = $i + 2;
-	}
 
-	print "PAIS\tSISID\tPRESID\t\tRECO\t\tM.ESTADO\tP.ESTADO\tM.REST\tP.REST\tDIF\tANIO\tMES\tM.DIA\tP.DIA\n\n";
-
-	for $i (@reporteRecomendacion)
-	{
-		print "$i->{PAIS}\t$i->{SISID}\t$i->{PRESID}\t$i->{RECO}\t$i->{M_ESTADO}\t$i->{P_ESTADO}\t$i->{M_REST}\t$i->{P_REST}\t$i->{DIF}\t$i->{ANIO}\t$i->{MES}\t$i->{DIA}\n";
-		if (@ARGV != () and $ARGV[0] == "-g")
+		#Condiciones para la recomendación
+		$i = 0;
+		@reporteRecomendacion = ();
+		while($i < @posicionSeleccionada)
 		{
-			$escritura = "$dirReports/comparado." . $nombrePais;
-			open(SALIDA,">>$escritura");
-			print SALIDA "$i->{PAIS};$i->{SISID};$i->{PRESID};$i->{RECO};$i->{M_ESTADO};$i->{P_ESTADO};$i->{M_REST};$i->{P_REST};$i->{DIF};$i->{ANIO};$i->{MES};$i->{DIA}\n";
-		}
-	}
-	print "\n\n¿Desea hacer otra comparativa?(Y/n): ";
-	$otraComparativa = <STDIN>;
-	chomp($otraComparativa);
-}
-
-
-#DIVERGENCIAS EN PORCENTAJE
-
-$otraConsulta = "Y";
-while ($otraConsulta eq "Y")
-{
-
-	system("clear");
-	print "-------------------------- PERCENTAGE DIFFERENCE -----------------------------";
-	print "\n\nType reference percentage: ";
-	$porcentaje = <STDIN>;
-	chomp($porcentaje);
-	$comparado = "$dirReports/comparado." . $nombrePais;
-	if (-e $comparado)
-	{
-		@reportePorcentaje = ();
-		open(ENTRADA,"<$comparado");
-		$i = 1;
-		while($linea = <ENTRADA>)
-		{
-			@variables = split(/;/,$linea);
-			$difPesos = $variables[8];
-			if ($variables[6] == 0)
+			$recomendacion = "NO-RECAL";
+			if ($ppi[$posicionSeleccionada[$i]]->{"CTB_ESTADO"} eq "SMOR" and $prestamos[$posicionSeleccionada[$i + 1]]->{"CTB_ANIO"} ne "SMOR")
 			{
-				$difPorcentaje = 0;
+				$recomendacion = "RECAL";
+			}
+
+			if($restanteMaestro[$posicionSeleccionada[$i]] lt $prestamos[$posicionSeleccionada[$i + 1]]->{"MT_REST"})
+			{
+				$recomendacion = "RECAL";
+			}
+
+
+			$diferencia = $restanteMaestro[$posicionSeleccionada[$i]] - $prestamos[$posicionSeleccionada[$i+1]]->{"MT_REST"};
+
+			push @reporteRecomendacion, {PAIS => $ppi[$posicionSeleccionada[$i]]->{"PAIS_ID"},
+										SISID => $ppi[$posicionSeleccionada[$i]]->{"SIS_ID"},
+										PRESID => $ppi[$posicionSeleccionada[$i]]->{"PRES_ID"},
+										RECO => $recomendacion,
+										M_ESTADO => $ppi[$posicionSeleccionada[$i]]->{"CTB_ESTADO"},
+										P_ESTADO => $prestamos[$posicionSeleccionada[$i + 1]]->{"CTB_ESTADO"},
+										M_REST => $restanteMaestro[$posicionSeleccionada[$i]],
+										P_REST => $prestamos[$posicionSeleccionada[$i + 1]]->{"MT_REST"},
+										DIF => $diferencia,
+										ANIO => $ppi[$posicionSeleccionada[$i]]->{"CTB_ANIO"},
+										MES => $ppi[$posicionSeleccionada[$i]]->{"CTB_MES"},
+										DIA => $ppi[$posicionSeleccionada[$i]]->{"CTB_DIA"}
+										};
+			$i = $i + 2;
+		}
+
+		print "PAIS\tSISID\tPRESID\t\tRECO\t\tM.ESTADO\tP.ESTADO\tM.REST\tP.REST\tDIF\tANIO\tMES\tM.DIA\tP.DIA\n\n";
+
+		for $i (@reporteRecomendacion)
+		{
+			print "$i->{PAIS}\t$i->{SISID}\t$i->{PRESID}\t$i->{RECO}\t$i->{M_ESTADO}\t$i->{P_ESTADO}\t$i->{M_REST}\t$i->{P_REST}\t$i->{DIF}\t$i->{ANIO}\t$i->{MES}\t$i->{DIA}\n";
+			if (@ARGV != () and $ARGV[0] eq "-g")
+			{
+				$escritura = "$dirReports/comparado." . $nombrePais;
+				open(SALIDA,">>$escritura");
+				print SALIDA "$i->{PAIS};$i->{SISID};$i->{PRESID};$i->{RECO};$i->{M_ESTADO};$i->{P_ESTADO};$i->{M_REST};$i->{P_REST};$i->{DIF};$i->{ANIO};$i->{MES};$i->{DIA}\n";
+			}
+		}
+		print "\n\n¿Desea hacer otra comparativa?(Y/n): ";
+		$otraComparativa = <STDIN>;
+		chomp($otraComparativa);
+		if ($otraComparativa eq "N"){
+			menu();
+		}
+		elsif($otraComparativa eq "Y" )
+		{
+			recommendation();
+		}
+		else
+		{
+			menu();
+		}
+
+	}
+	if ($otraComparativa eq "N"){
+		menu();
+	}
+
+
+
+}
+	#DIVERGENCIAS EN PORCENTAJE
+sub perDif{
+	print "\nType country code: ";
+	$codPais = <STDIN>;
+	chomp($codPais);
+	print "Type system code: ";
+	$codSistema = <STDIN>;
+	chomp($codSistema);
+	#print "Ingrese la fecha inicial del período (formato DD/MM/AAAA CON BARRAS): ";
+	#$inicialPeriodo = <STDIN>;
+	#chomp($inicialPeriodo);
+	#$fechaInicial = $patronFecha->parse_datetime($inicialPeriodo);
+	#print "Ingrese la fecha final del periódo (formato DD/MM/AAAA CON BARRAS): ";
+	#$finalPeriodo = <STDIN>;
+	#chomp($finalPeriodo);
+	#$fechaFinal = $patronFecha->parse_datetime($finalPeriodo);
+
+
+	$maestro = "$dirMaster/PPI.mae";
+	open(ENTRADA1,"<$maestro") || die "ERROR: Couldn't find master file.";
+
+	my @variables = (); #este array almacenará los valores de cada línea separados
+
+	my @ppi = ();
+
+
+	#lectura de PPI.mae
+
+
+
+	while ($linea1 = <ENTRADA1>)
+	{
+		@variables = split(/;/,$linea1);
+
+		push @ppi, {PAIS_ID => $variables[0], SIS_ID => $variables[1], CTB_ANIO => $variables[2], CTB_MES => $variables[3],
+		CTB_DIA => $variables[4], CTB_ESTADO => $variables[5], PRES_FE => $variables[6], PRES_ID => $variables[7],
+		PRES_TI => $variables[8], MT_PRES => $variables[9], MT_IMPAGO => $variables[10], MT_INDE => $variables[11],
+		MT_INNODE => $variables[12], MT_DEB => $variables[13]  } ;
+
+	}
+
+
+
+	#SE AVERIGUA EL NOMBRE DEL PAÍS
+	#Se lee el archivo p-s.mae
+	$psMae = "$dirMaster/p-s.mae";
+	$nombrePais = "";
+	open(ENTRADA2,$psMae) || die "ERROR: Couldn't read file p-s.mae";
+	while($linea = <ENTRADA2>)
+	{
+		@variables = split(/-/,$linea);
+		if($variables[0] eq $codPais)
+		{
+			$nombrePais = $variables[1];
+		}
+	}
+
+
+	#CÁLCULO DEL MONTO RESTANTE DEL MAESTRO
+	my @restanteMaestro = ();
+
+	for $i(@ppi)
+	{
+		$restante = $i->{"MT_PRES"} + $i->{"MT_IMPAGO"} + $i->{"MT_INDE"} + $i->{"MT_INNODE"} - $i->{"MT_DEB"};
+		push @restanteMaestro,$restante;
+	}
+
+
+
+
+	#LECTURA DE prestamos.pais:
+	$file = "$dirProcessed/PRESTAMOS.$nombrePais";
+	if (-e $file) {
+		open(ENTRADA3,"<$file") || die "Couldn't open file $file";
+	}
+	else
+	{
+		print "ERROR: The country code doesn't exist\n";
+		sleep(2);
+		menu();
+	}
+	my @prestamos = ();
+	while ($linea = <ENTRADA3>)
+	{
+		@variables = split(/;/,$linea);
+		push @prestamos, {SIS_ID => $variables[0], CTB_ANIO => $variables[1], CTB_MES => $variables[2], CTB_DIA => $variables[3],CTB_ESTADO => $variables[4], PRES_ID => $variables[5], MT_PRES => $variables[6], MT_IMPAGO => $variables[7], MT_INDE => $variables[8], MT_INNODE => $variables[9], MT_DEB => $variables[10], MT_REST => $variables[11], PRES_CLI_ID => $variables[12], PRES_CLI => $variables[13], INS_FE => $variables[14], INS_USER => $variables[15] } ;
+	}
+	$otraConsulta = "Y";
+	while ($otraConsulta eq "Y")
+	{
+		$comparado = "$dirReports/comparado." . $nombrePais;
+		#system("clear");
+
+		if (-e $comparado)
+		{
+			print "-------------------------- PERCENTAGE DIFFERENCE -----------------------------";
+			print "\n\nType reference percentage: ";
+			$porcentaje = <STDIN>;
+			chomp($porcentaje);
+			$comparado = "$dirReports/comparado." . $nombrePais;
+			@reportePorcentaje = ();
+			open(ENTRADA,"<$comparado");
+			$i = 1;
+			while($linea = <ENTRADA>)
+			{
+				@variables = split(/;/,$linea);
+				$difPesos = $variables[8];
+				if ($variables[6] == 0)
+				{
+					$difPorcentaje = 0;
+				}
+				else
+				{
+						$difPorcentaje = sprintf("%.2f",abs(($difPesos * 100) / $variables[6]));
+				}
+				if ($difPorcentaje > $porcentaje)
+				{
+					push @reportePorcentaje, {	M_REST => $variables[6],
+												P_REST => $variables[7],
+												DIF_PESOS => $difPesos,
+												DIF_PORCENTAJE => $difPorcentaje,
+												PAIS_ID => $variables[0],
+												SIS_ID => $variables[1],
+												PRES_ID => $variables[2],
+												RECO => $variables[3],
+												};
+				}
+				$i = $i + 1;
+			}
+
+			print "\nRecords with difference bigger than $porcentaje % : \n\n";
+
+			print "PAIS_ID\tSIS_ID\tPRES_ID\tRECOMENDACIÓN\tMAESTRO\tPRÉSTAMOS\tDIFERENCIA\tDIFERENCIA(%)\n\n";
+			$consecutivo = "1";
+			$file = "$dirReports/reportDivPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
+			while (-e $file)
+			{
+				$consecutivo = $consecutivo + 1;
+				$file = "$dirReports/reportDivPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
+			}
+			for $i (@reportePorcentaje)
+			{
+				print "$i->{PAIS_ID}\t$i->{SIS_ID}\t$i->{PRES_ID}\t$i->{RECO_ID}\t$i->{M_REST}\t$i->{P_REST}\t$i->{DIF_PESOS}\t$i->{DIF_PORCENTAJE}\n";
+				if (@ARGV != () and $ARGV[0] == "-g")
+				{
+					open(SALIDA,">>$file");
+					print SALIDA "$i->{PAIS_ID};$i->{SIS_ID};$i->{PRES_ID};$i->{RECO};$i->{M_REST};$i->{P_REST};$i->{DIF_PESOS};$i->{DIF_PORCENTAJE}\n";
+				}
+			}
+			print "\n\n¿Desea realizar otra consulta? (Y/n): ";
+			$otraConsulta = <STDIN>;
+			chomp($otraConsulta);
+			if ($otraConsulta eq "N"){
+				menu();
+			}
+			elsif($otraConsulta eq "Y" )
+			{
+				perDif();
 			}
 			else
 			{
-					$difPorcentaje = sprintf("%.2f",abs(($difPesos * 100) / $variables[6]));
+				menu();
 			}
-			if ($difPorcentaje > $porcentaje)
-			{
-				push @reportePorcentaje, {	M_REST => $variables[6],
-											P_REST => $variables[7],
-											DIF_PESOS => $difPesos,
-											DIF_PORCENTAJE => $difPorcentaje,
-											PAIS_ID => $variables[0],
-											SIS_ID => $variables[1],
-											PRES_ID => $variables[2],
-											RECO => $variables[3],
-											};
-			}
-			$i = $i + 1;
+		}
+		else
+		{
+			print "ERROR: $comparado file doesn't exists. First run the script report with -g and execute option 1 of menu\n\n";
+			sleep(5);
+			$otraConsulta = "";
 		}
 
-		print "\nRecords with difference bigger than $porcentaje % : \n\n";
-
-		print "PAIS_ID\tSIS_ID\tPRES_ID\tRECOMENDACIÓN\tMAESTRO\tPRÉSTAMOS\tDIFERENCIA\tDIFERENCIA(%)\n\n";
-		$consecutivo = "1";
-		$file = "$dirReports/reportDivPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
-		while (-e $file)
-		{
-			$consecutivo = $consecutivo + 1;
-			$file = "$dirReports/reportDivPorcentaje" . $porcentaje . "(" . $consecutivo .  ")". "." . $nombrePais;
-		}
-		for $i (@reportePorcentaje)
-		{
-			print "$i->{PAIS_ID}\t$i->{SIS_ID}\t$i->{PRES_ID}\t$i->{RECO_ID}\t$i->{M_REST}\t$i->{P_REST}\t$i->{DIF_PESOS}\t$i->{DIF_PORCENTAJE}\n";
-			if (@ARGV != () and $ARGV[0] == "-g")
-			{
-				open(SALIDA,">>$file");
-				print SALIDA "$i->{PAIS_ID};$i->{SIS_ID};$i->{PRES_ID};$i->{RECO};$i->{M_REST};$i->{P_REST};$i->{DIF_PESOS};$i->{DIF_PORCENTAJE}\n";
-			}
-		}
-		print "\n\n¿Desea realizar otra consulta? (Y/n): ";
-		$otraConsulta = <STDIN>;
-		chomp($otraConsulta);
-	}
-	else
-	{
-		print "ERROR: $comparado file doesn't exists. First run the script report and enter the code $nombrePais when asked to.\n\n";
-		$otraConsulta = "";
 	}
 
 }
 
+sub pesDif {
+	print "\nType country code: ";
+	$codPais = <STDIN>;
+	chomp($codPais);
+	print "Type system code: ";
+	$codSistema = <STDIN>;
+	chomp($codSistema);
+	#print "Ingrese la fecha inicial del período (formato DD/MM/AAAA CON BARRAS): ";
+	#$inicialPeriodo = <STDIN>;
+	#chomp($inicialPeriodo);
+	#$fechaInicial = $patronFecha->parse_datetime($inicialPeriodo);
+	#print "Ingrese la fecha final del periódo (formato DD/MM/AAAA CON BARRAS): ";
+	#$finalPeriodo = <STDIN>;
+	#chomp($finalPeriodo);
+	#$fechaFinal = $patronFecha->parse_datetime($finalPeriodo);
 
-#DIVERGENCIAS EN PESOS
-$consultaPesos = "Y";
-while ($consultaPesos eq "Y")
-{
-	system("clear");
-	print "-------------------------- PESOS DIFFERENCE -----------------------------";
-	print "\n\nType the pesos reference value: ";
-	$pesos = <STDIN>;
-	chomp($pesos);
-	$comparado = "$dirReports/comparado." . $nombrePais;
-	if (-e $comparado)
+
+	$maestro = "$dirMaster/PPI.mae";
+	open(ENTRADA1,"<$maestro") || die "ERROR: Couldn't find master file.";
+
+	my @variables = (); #este array almacenará los valores de cada línea separados
+
+	my @ppi = ();
+
+
+	#lectura de PPI.mae
+
+
+
+	while ($linea1 = <ENTRADA1>)
 	{
-		@reportePesos = ();
-		open(ENTRADA,"<$comparado");
-		$i = 1;
-		while($linea = <ENTRADA>)
-		{
-			@variables = split(/;/,$linea);
-			$difPesos = abs($variables[8]);
-			if ($difPesos > $pesos)
-			{
-				push @reportePesos, {		M_REST => $variables[6],
-											P_REST => $variables[7],
-											DIF_PESOS => $difPesos,
-											PAIS_ID => $variables[0],
-											SIS_ID => $variables[1],
-											PRES_ID => $variables[2],
-											RECO => $variables[3],
-											};
-			}
-			$i = $i + 1;
-		}
+		@variables = split(/;/,$linea1);
 
-		print "\nRecords with difference bigger than $pesos pesos: \n\n";
+		push @ppi, {PAIS_ID => $variables[0], SIS_ID => $variables[1], CTB_ANIO => $variables[2], CTB_MES => $variables[3],
+		CTB_DIA => $variables[4], CTB_ESTADO => $variables[5], PRES_FE => $variables[6], PRES_ID => $variables[7],
+		PRES_TI => $variables[8], MT_PRES => $variables[9], MT_IMPAGO => $variables[10], MT_INDE => $variables[11],
+		MT_INNODE => $variables[12], MT_DEB => $variables[13]  } ;
 
-		print "PAIS_ID\tSIS_ID\tPRES_ID\tRECOMENDACIÓN\tMAESTRO\tPRÉSTAMOS\tDIFERENCIA\n\n";
-		$consecutivo = "1";
-		$file = "$dirReports/reportDivPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
-		while (-e $file)
-		{
-			$consecutivo = $consecutivo + 1;
-			$file = "$dirReports/reportDivPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
-		}
-		for $i (@reportePesos)
-		{
-			print "$i->{PAIS_ID}\t$i->{SIS_ID}\t$i->{PRES_ID}\t$i->{RECO}\t$i->{M_REST}\t$i->{P_REST}\t$i->{DIF_PESOS}\n";
-			if (@ARGV != () and $ARGV[0] == "-g")
-			{
-				open(SALIDA,">>$file");
-				print SALIDA "$i->{PAIS_ID};$i->{SIS_ID};$i->{PRES_ID};$i->{RECO};$i->{M_REST};$i->{P_REST};$i->{DIF_PESOS}\n";
-			}
-		}
+	}
 
-		print "\n\nWould you like to get other report? (Y/N): ";
-		$consultaPesos = <STDIN>;
-		chomp($consultaPesos);
+
+
+	#SE AVERIGUA EL NOMBRE DEL PAÍS
+	#Se lee el archivo p-s.mae
+	$psMae = "$dirMaster/p-s.mae";
+	$nombrePais = "";
+	open (ENTRADA2,$psMae);
+	while($linea = <ENTRADA2>)
+	{
+		@variables = split(/-/,$linea);
+		if($variables[0] eq $codPais)
+		{
+			$nombrePais = $variables[1];
+		}
+	}
+
+
+	#CÁLCULO DEL MONTO RESTANTE DEL MAESTRO
+	my @restanteMaestro = ();
+
+	for $i(@ppi)
+	{
+		$restante = $i->{"MT_PRES"} + $i->{"MT_IMPAGO"} + $i->{"MT_INDE"} + $i->{"MT_INNODE"} - $i->{"MT_DEB"};
+		push @restanteMaestro,$restante;
+	}
+
+
+
+
+	#LECTURA DE prestamos.pais:
+	$file = "$dirProcessed/PRESTAMOS.$nombrePais";
+	if (-e $file) {
+		open(ENTRADA3,"<$file") || die "Couldn't open file $file";
 	}
 	else
 	{
-		print "ERROR: $comparado file doesn't exists. First run the script report and enter the code $nombrePais when asked to.\n\n";
-		$consultaPesos = "";
+		print "ERROR: The country code doesn't exist\n";
+		sleep(2);
+		menu();
 	}
+	my @prestamos = ();
+	while ($linea = <ENTRADA3>)
+	{
+		@variables = split(/;/,$linea);
+		push @prestamos, {SIS_ID => $variables[0], CTB_ANIO => $variables[1], CTB_MES => $variables[2], CTB_DIA => $variables[3],CTB_ESTADO => $variables[4], PRES_ID => $variables[5], MT_PRES => $variables[6], MT_IMPAGO => $variables[7], MT_INDE => $variables[8], MT_INNODE => $variables[9], MT_DEB => $variables[10], MT_REST => $variables[11], PRES_CLI_ID => $variables[12], PRES_CLI => $variables[13], INS_FE => $variables[14], INS_USER => $variables[15] } ;
+	}
+	#DIVERGENCIAS EN PESOS
+	$consultaPesos = "Y";
+	while ($consultaPesos eq "Y")
+	{
+		#system("clear");
+		$comparado = "$dirReports/comparado." . $nombrePais;
+
+		if (-e $comparado)
+		{
+			print "-------------------------- PESOS DIFFERENCE -----------------------------";
+			print "\n\nType the pesos reference value: ";
+			$pesos = <STDIN>;
+			chomp($pesos);
+			$comparado = "$dirReports/comparado." . $nombrePais;
+			@reportePesos = ();
+			open(ENTRADA,"<$comparado");
+			$i = 1;
+			while($linea = <ENTRADA>)
+			{
+				@variables = split(/;/,$linea);
+				$difPesos = abs($variables[8]);
+				if ($difPesos > $pesos)
+				{
+					push @reportePesos, {		M_REST => $variables[6],
+												P_REST => $variables[7],
+												DIF_PESOS => $difPesos,
+												PAIS_ID => $variables[0],
+												SIS_ID => $variables[1],
+												PRES_ID => $variables[2],
+												RECO => $variables[3],
+												};
+				}
+				$i = $i + 1;
+			}
+
+			print "\nRecords with difference bigger than $pesos pesos: \n\n";
+
+			print "PAIS_ID\tSIS_ID\tPRES_ID\tRECOMENDACIÓN\tMAESTRO\tPRÉSTAMOS\tDIFERENCIA\n\n";
+			$consecutivo = "1";
+			$file = "$dirReports/reportDivPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
+			while (-e $file)
+			{
+				$consecutivo = $consecutivo + 1;
+				$file = "$dirReports/reportDivPesos" . $pesos . "(" . $consecutivo .  ")". "." . $nombrePais;
+			}
+			for $i (@reportePesos)
+			{
+				print "$i->{PAIS_ID}\t$i->{SIS_ID}\t$i->{PRES_ID}\t$i->{RECO}\t$i->{M_REST}\t$i->{P_REST}\t$i->{DIF_PESOS}\n";
+				if (@ARGV != () and $ARGV[0] == "-g")
+				{
+					open(SALIDA,">>$file");
+					print SALIDA "$i->{PAIS_ID};$i->{SIS_ID};$i->{PRES_ID};$i->{RECO};$i->{M_REST};$i->{P_REST};$i->{DIF_PESOS}\n";
+				}
+			}
+
+			print "\n\nWould you like to get other report? (Y/N): ";
+			$consultaPesos = <STDIN>;
+			chomp($consultaPesos);
+			if ($consultaPesos eq "N"){
+				menu();
+			}
+			elsif($consultaPesos eq "Y" )
+			{
+				pesDif();
+			}
+			else
+			{
+				menu();
+			}
+		}
+		else
+		{
+			print "ERROR: $comparado file doesn't exists. First run the script report with -g and execute option 1 of menu\n\n";
+			sleep(5);
+			$consultaPesos = "";
+		}
+	}
+
 }
