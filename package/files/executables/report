@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 
 
-
 #Detectar la ruta del archivo de configuracion
 $HOME = $ENV{'HOME'};
 $dirconf = "$HOME/Grupo06/.dirconf/installation.conf";

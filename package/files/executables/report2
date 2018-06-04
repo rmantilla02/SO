@@ -1,0 +1,185 @@
+#!/usr/bin/perl
+use DateTime;
+use Try::Tiny;
+use Term::ANSIColor;
+
+my $GRUPO;
+my $DIRCONF;
+my $EXECUTABLES;
+my $MASTER;
+my $ARRIVAL;
+my $ACCEPTED;
+my $REJECTED;
+my $PROCESSED;
+my $REPORTS;
+my $LOGS;
+
+my $COMPARATIVE;
+
+sub ImportVariables {
+	$GRUPO = $ENV{'GRUPO'};
+	$DIRCONF = $ENV{'DIRCONF'};
+	$EXECUTABLES = $ENV{'EXECUTABLES'};
+	$MASTER = $ENV{'MASTER'};
+	$ARRIVAL = $ENV{'ARRIVAL'};
+	$ACCEPTED = $ENV{'ACCEPTED'};
+	$REJECTED = $ENV{'REJECTED'};
+	$PROCESSED = $ENV{'PROCESSED'};
+	$REPORTS = $ENV{'REPORTS'};
+	$LOGS = $ENV{'LOGS'};
+}
+
+sub processMasterFile {
+	my $COUNTRY_CODE = $_[0];
+	my $SYSTEM_CODE = $_[1];
+	my $FROM_DATE = $_[2];
+	my $TO_DATE = $_[3];
+
+	try {
+		open(ENTRADA1, "<$MASTER/PPI.mae") || die "ERROR: Couldn't find master file.";
+
+		my @VARS = ();
+		my @PPI = ();
+		my @PPI_REST = ();
+
+		while ($LINE = <ENTRADA1>) {
+			@VARS = split(/;/, $LINE);
+
+			push @PPI, { PAIS_ID => $VARS[0], SIS_ID => $VARS[1], CTB_ANIO => $VARS[2], CTB_MES => $VARS[3], CTB_DIA => $VARS[4], CTB_ESTADO => $VARS[5], PRES_FE => $VARS[6], PRES_ID => $VARS[7],
+				PRES_TI => $VARS[8], MT_PRES => $VARS[9], MT_IMPAGO => $VARS[10], MT_INDE => $VARS[11], MT_INNODE => $VARS[12], MT_DEB => chomp($VARS[13]) };
+		}
+
+		for $AUX(@PPI) {
+			$PPI_DATE = DateTime -> new (year => $AUX -> {"CTB_ANIO"}, month => $AUX -> {"CTB_MES"}, day => $AUX -> {"CTB_DIA"});
+
+			$IT++;
+			if ($COUNTRY_CODE eq $AUX->{"PAIS_ID"} && (!$SYSTEM_CODE || $SYSTEM_CODE == $AUX->{"SIS_ID"}) && $PPI_DATE >= $FROM_DATE && $PPI_DATE <= $TO_DATE) {
+				$REST = $AUX->{"MT_PRES"} + $AUX->{"MT_IMPAGO"} + $AUX->{"MT_INDE"} + $AUX->{"MT_INNODE"} - $AUX->{"MT_DEB"};
+			
+				push @PPI_REST, { PAIS_ID => $AUX->{"PAIS_ID"}, SIS_ID => $AUX->{"SIS_ID"}, CTB_ANIO => $AUX->{"CTB_ANIO"}, CTB_MES => $AUX->{"CTB_MES"}, CTB_DIA => $AUX->{"CTB_DIA"}, 
+					CTB_ESTADO => $AUX->{"CTB_ESTADO"}, PRES_FE => $AUX->{"PRES_FE"}, PRES_ID => $AUX->{"PRES_ID"}, PRES_TI => $AUX->{"PRES_TI"}, MT_PRES => $AUX->{"MT_PRES"},
+					MT_IMPAGO => $AUX->{"MT_IMPAGO"}, MT_INDE => $AUX->{"MT_INDE"}, MT_INNODE => $AUX->{"MT_INNODE"}, MT_DEB => $AUX->{"MT_DEB"}, MT_REST => $REST };
+					$IT2++;
+			}
+		}
+
+		for $AUX(@PPI_REST) {
+			print "PPI filtrado: $AUX->{PAIS_ID} | $AUX->{SIS_ID} | $AUX->{CTB_ANIO} | $AUX->{CTB_MES} | $AUX->{CTB_DIA} | $AUX->{CTB_ESTADO} | $AUX->{PRES_FE} | $AUX->{PRES_ID} | $AUX->{PRES_TI} | $AUX->{MT_PRES} | $AUX->{MT_IMPAGO} | $AUX->{MT_INDE} | $AUX->{MT_INNODE} | $AUX->{MT_DEB} | $AUX->{MT_REST}\n";
+		}
+	} catch {
+		print color('red');
+		print "ERROR: Couldn't find master file PPI.\n";
+		print color('reset');
+	}
+}
+
+sub processCountryInput {
+	$COUNTRY = $_[0];
+
+	while (!$COUNTRY) {
+		print "Country code is a mandatory paramenter. Please type one.\n";
+		print "Enter the country code [ENTER]: ";
+		$COUNTRY = <STDIN>;
+		chomp($COUNTRY);
+	}
+
+	return $COUNTRY;
+}
+
+sub processBeginDate {
+	my $FROM_DATE;
+	$BEGINNING = $_[0];
+	$TODAY = DateTime -> now;
+	$DATES_OK = 0;
+
+	while ($BEGINNING && !$DATES_OK) {
+		try {
+			$FROM_DATE = DateTime -> new (year => substr($BEGINNING, 0, 4), month => substr($BEGINNING, 5, 2), day => substr($BEGINNING, 8, 2));
+			if ($FROM_DATE > $TODAY) { die "Begin date must be before today."; }
+			$DATES_OK = 1;
+		} catch {
+			print color('red');
+			print "There was an error in the date entered.\n";
+			print color('reset');
+			print "Remember that the begin date must be before today.\n";
+			print "Reenter the date (YYYY-MM-DD) [ENTER]: ";
+			$BEGINNING = <STDIN>;
+			chomp($BEGINNING);
+		};
+	}
+
+	return $FROM_DATE;
+}
+
+sub processEndDate {
+	my $TO_DATE;
+	$ENDING = $_[0];
+	$FROM_DATE = $_[1];
+	$TODAY = DateTime -> now;
+	$DATES_OK = 0;
+
+	while ($ENDING && !$DATES_OK) {
+		try {
+			$TO_DATE = DateTime -> new (year => substr($ENDING, 0, 4), month => substr($ENDING, 5, 2), day => substr($ENDING, 8, 2));
+			if ($TO_DATE > $TODAY) { die "End date must be before today."; }
+			if ($FROM_DATE > $TO_DATE) { die "End date must be after begin date."; }
+			$DATES_OK = 1;
+		} catch {
+			print color('red');
+			print "There was an error in the date entered.\n";
+			print color('reset');
+			print "Remember that the end date must be after the begin date but before today.\n";
+			print "Reenter the previous date (YYYY-MM-DD) [ENTER]: ";
+			$ENDING = <STDIN>;
+			chomp($ENDING);
+		};
+	}
+
+	return $TO_DATE;
+}
+
+sub saveComparisson {
+	print "Enter the country code [ENTER]: ";
+	$COUNTRY_INPUT = <STDIN>;
+	chomp($COUNTRY_INPUT);
+	$COUNTRY_CODE = processCountryInput($COUNTRY_INPUT);
+
+	print "Enter the system code [ENTER] (Default: every system): ";
+	$SYSTEM_CODE = <STDIN>;
+	chomp($SYSTEM_CODE);
+	
+	print "Enter the beginning date of the date range (YYYY-MM-DD) [ENTER] (Default: Beginning of Time): ";
+	$BEGINNING = <STDIN>;
+	chomp($BEGINNING);
+	$FROM_DATE = processBeginDate($BEGINNING);
+
+	print "Enter the ending date of the date range (YYYY-MM-DD) [ENTER] (Default: Judgment Day): ";
+	$ENDING = <STDIN>;
+	chomp($ENDING);
+	$TO_DATE = processEndDate($ENDING, $FROM_DATE);
+
+	if (!$TO_DATE) { $TO_DATE = DateTime -> new (year => 9999, month => 12, day => 31); }
+	processMasterFile($COUNTRY_CODE, $SYSTEM_CODE, $FROM_DATE, $TO_DATE);
+}
+
+sub showHelp {
+	print "Welcome to the Report Manager System.\n";
+	print "Before you access the comparative system, you must save the current comparisson state by running '.report/ -g'.\n";
+	print "After you properly set the comparisson state, you can calculate the divergences by percentage and by price just by accesing the report system without any parameter (run './report').\n";
+	print "To get the divergences report, you must specify at leaste the country which data you want to process. You can also provide the system and a date range if you want more specific information.\n";
+}
+
+sub executeReportManager {
+	print "Executing report manager.\n";
+}
+
+ImportVariables();
+
+if (! $GRUPO) {
+	print "The current system hasn't been initialized yet. Please, go to the executable folder and run '. ./start'.\n"
+} else {
+	if ($ARGV[0] eq "-g") { saveComparisson(); } 
+	elsif ($ARGV[0] eq "-a") { showHelp(); } 
+	elsif ($ARGV[0] eq "") { executeReportManager(); }
+	else { print "Invalid calling argument. Please execute './report -a' to show the program help guide.\n"; }
+}

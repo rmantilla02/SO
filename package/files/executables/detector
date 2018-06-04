@@ -11,7 +11,7 @@ function moveFile() {
     fi
 
     for file in $@; do
-        local bn=$(basename $file)
+        local bn="$(basename $file)"
         local dest="$dir/$bn"
 
         if [ -f $dest ]; then

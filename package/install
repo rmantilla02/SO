@@ -75,7 +75,7 @@ inputDirectory() {
 		info "inputDirectory" "User inserted the path $INPUT."
 		TMP_DIR="$GRUPO/$INPUT"
 
-		checkDuplicated "$TMP_DIR"
+		checkDuplicated "$TMP_DIR" "${!1}"
 		while [ $DIRECTORY_DUPLICATED == 1 ]; do
 			warn "inputDirectory" "User must retype the path because it was duplicated."
 			echo -n "The specified directory is already used, type a different one [ENTER] (Default: ${!1}): "
@@ -85,7 +85,7 @@ inputDirectory() {
 			if [ "$INPUT" != "" ]; then
 				TMP_DIR="$GRUPO/$INPUT"
 			fi
-			checkDuplicated "$TMP_DIR"
+			checkDuplicated "$TMP_DIR" "${!1}"
 		done
 	
 		eval "$1=$TMP_DIR"
@@ -116,15 +116,15 @@ updateDirectory() {
 checkDuplicated() {
 	DIRECTORY_DUPLICATED=0
 
-	if [ "$1" == "$DIRCONF" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with System directory)."
-	elif [ "$1" == "$EXE_FILES_DIR" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated"  "Input directory duplicated (with Executables directory)."
-	elif [ "$1" == "$MASTER_FILES_DIR" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated"  "Input directory duplicated (with Master directory)."
-	elif [ "$1" == "$ARRIVAL_DIR" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated"  "Input directory duplicated (with Arrival directory)."
-	elif [ "$1" == "$ACCEPTED_DIR" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated"  "Input directory duplicated (with Accepted directory)."
-	elif [ "$1" == "$REJECTED_DIR" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated"  "Input directory duplicated (with Rejected directory)."
-	elif [ "$1" == "$PROCESSED_DIR" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated"  "Input directory duplicated (with Processed directory)."
-	elif [ "$1" == "$REPORTS_DIR" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated"  "Input directory duplicated (with Reports directory)."
-	elif [ "$1" == "$LOGS_DIR" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated"  "Input directory duplicated (with Logs directory)."
+	if [ "$1" == "$DIRCONF" -a "$DIRCONF" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with System directory)."
+	elif [ "$1" == "$EXE_FILES_DIR" -a "$EXE_FILES_DIR" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with Executables directory)."
+	elif [ "$1" == "$MASTER_FILES_DIR" -a "$MASTER_FILES_DIR" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with Master directory)."
+	elif [ "$1" == "$ARRIVAL_DIR" -a "$ARRIVAL_DIR" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with Arrival directory)."
+	elif [ "$1" == "$ACCEPTED_DIR" -a "$ACCEPTED_DIR" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with Accepted directory)."
+	elif [ "$1" == "$REJECTED_DIR" -a "$REJECTED_DIR" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with Rejected directory)."
+	elif [ "$1" == "$PROCESSED_DIR" -a "$PROCESSED_DIR" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with Processed directory)."
+	elif [ "$1" == "$REPORTS_DIR" -a "$REPORTS_DIR" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with Reports directory)."
+	elif [ "$1" == "$LOGS_DIR" -a "$LOGS_DIR" != "$2" ]; then DIRECTORY_DUPLICATED=1; warn "checkDuplicated" "Input directory duplicated (with Logs directory)."
 	fi
 }
 
