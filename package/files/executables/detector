@@ -101,7 +101,7 @@ function processFile() {
 
     # valicacion de periodo
     # todo: sacar harcodeo del periodo
-    if [ "$year" -gt 2017 ] && [ "$month" -gt 05 ]; then
+    if [ "$year" -gt 2017 ] && [ "$month" -gt 06 ]; then
         echo "Invalid period"
         info "processFile" "Invalid file: Invalid period - $name"
         rejectFile $1 "update rejected"; return;
