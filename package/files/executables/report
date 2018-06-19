@@ -4,26 +4,11 @@ system("clear");
 
 
 
-#Detectar la ruta del archivo de configuracion
+#Seteo de variables de ambiente
 $HOME = $ENV{'HOME'};
-$dirconf = "$HOME/Grupo06/.dirconf/installation.conf";
-open(entradaMaster,"<$dirconf") || die "Couldn't read configuration file";
-while($linea = <entradaMaster>)
-{
-	@variables = split(/-/,$linea);
-	if ($variables[0] eq "Master")
-	{
-		$dirMaster = $variables[1];
-	}
-	if ($variables[0] eq "Processed")
-	{
-		$dirProcessed = $variables[1];
-	}
-	if ($variables[0] eq "Reports")
-	{
-		$dirReports = $variables[1];
-	}
-}
+$dirProcessed = $ENV{'PROCESSED'};
+$dirMaster = $ENV{'MASTER'};
+$dirReports = $ENV{'REPORTS'};
 sub menu {
 	system("clear");
 	print "----------------------------- Report ------------------------------\n";
@@ -183,7 +168,7 @@ sub recommendation {
 			open(ENTRADA3,"<$file");
 			while($linea2 = <ENTRADA3>)
 			{
-				if ($ppi[$i]->{"PRES_ID"} eq $prestamos[$j]->{"PRES_ID"} and $ppi[$i]->{"CTB_ANIO"} eq $prestamos[$j]->{"CTB_ANIO"} and $ppi[$i]->{"CTB_MES"} == $prestamos[$j]->{"CTB_MES"} and $ppi[$i]->{"SIS_ID"} eq $codSistema and $prestamos[$j]->{"SIS_ID"} eq $codSistema)
+				if ($ppi[$i]->{"PRES_ID"} eq $prestamos[$j]->{"PRES_ID"} and $ppi[$i]->{"CTB_ANIO"} eq $prestamos[$j]->{"CTB_ANIO"} and $ppi[$i]->{"CTB_MES"} == $prestamos[$j]->{"CTB_MES"} and $ppi[$i]->{"SIS_ID"} == $codSistema and $prestamos[$j]->{"SIS_ID"} == $codSistema)
 				{
 					push @posicionSeleccionada, $i;
 					push @posicionSeleccionada, $j;
@@ -381,7 +366,7 @@ sub perDif{
 				{
 						$difPorcentaje = sprintf("%.2f",abs(($difPesos * 100) / $variables[6]));
 				}
-				if ($difPorcentaje > $porcentaje)
+				if ($difPorcentaje > $porcentaje and $codSistema eq $variables[1])
 				{
 					push @reportePorcentaje, {	M_REST => $variables[6],
 												P_REST => $variables[7],
@@ -548,7 +533,7 @@ sub pesDif {
 			{
 				@variables = split(/;/,$linea);
 				$difPesos = abs($variables[8]);
-				if ($difPesos > $pesos)
+				if ($difPesos > $pesos and $variables[1] eq $codSistema)
 				{
 					push @reportePesos, {		M_REST => $variables[6],
 												P_REST => $variables[7],
