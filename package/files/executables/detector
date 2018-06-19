@@ -3,6 +3,8 @@ LOGFILE=detector
 LOGS_DIRECTORY=$LOGS
 source ./log
 
+OIFS="$IFS"
+
 # Moving files function.
 function moveFile() {
     local dir=${1:? No arguments call}; shift
@@ -41,17 +43,28 @@ function processFile() {
 
     local name=$(basename $1)
 
-    # echo "Process file: " $name
-
-#   validamos que el archivo no esté vacío
+  # validamos que el archivo no esté vacío
     if ! [ -s $1 ]; then
         info "processFile" "Invalid file: empty file - $name"
         rejectFile $1 "empty file"; return;
     fi
 
+    # validamos que el nombre no tenga espacios
+    case "$name" in  
+     *\ * )
+        # echo "match"
+        echo "Invalid file name - $name"
+        info "processFile" "Invalid file: invalid file name - $name"
+        rejectFile $1 "invalid file name"; return;
+          ;;
+       *)
+           # echo "no match";
+           ;;
+    esac
+
     # validacion de nombre
     if ! [[ $name =~ [^_]+-[^_]+-[^_]+-[^_] ]]; then
-        echo "Invalid file name"
+        echo "Invalid file name - $name"
         info "processFile" "Invalid file: invalid file name - $name"
         rejectFile $1 "invalid file name"; return;
     fi
@@ -80,13 +93,13 @@ function processFile() {
 
     # If the system is not present in the p-s.mae it's rejected.
     if [ "$exist" = "false" ]; then
-        echo "The current file is not present in the system's master table."
+        echo "The current file is not present in the system's master table. - $name"
         info "processFile" "Invalid file: file is not present in the system's master table. - $name"
         rejectFile $1 "update rejected"; return;
     fi
 
     if [ "$year" -lt 2016 ]; then
-        echo "Year before 2016: " $year
+        echo "Invalid file: Year before 2016 - $name"
         info "processFile" "Invalid file: Year before 2016 - $name"
         rejectFile $1 "update rejected"; return;
     fi
@@ -94,19 +107,20 @@ function processFile() {
     # validacion de mes
     #echo "Month: " $month
     if [ "$month" -lt 1 ] || [ "$month" -gt 12 ]; then
-        echo "Invalid month"
+        echo "Invalid file: Invalid month - $name"
         info "processFile" "Invalid file: Invalid month - $name"
         rejectFile $1 "update rejected"; return;
     fi
 
     # valicacion de periodo
     # todo: sacar harcodeo del periodo
-    if [ "$year" -gt 2017 ] && [ "$month" -gt 06 ]; then
-        echo "Invalid period"
+    if [ "$year" -gt 2017 ] && [ "$month" -gt 05 ]; then
+        echo "Invalid file: Invalid period - $name"
         info "processFile" "Invalid file: Invalid period - $name"
         rejectFile $1 "update rejected"; return;
     fi
 
+    echo "Accepted file: $name"
     info "processFile" "Accepted file: $name"
     acceptFile $1
 }
@@ -117,9 +131,12 @@ while true; do
     info "main" "Iteration N° + $ITERATION"
 
     # echo "Iteration: " $ITERATION
+    IFS=$'\n'
 
     ARRIVED_FILES=$(ls $ARRIVAL)
     for FILE in $ARRIVED_FILES; do processFile "$ARRIVAL/$FILE"; done
+
+    IFS="$OIFS"
 
     ACCEPTED_FILES=$(ls $ACCEPTED)
     TRANSLATER_ACTIVATED=$(ps -ax | grep "translate" | grep -v "grep" | wc -l)
